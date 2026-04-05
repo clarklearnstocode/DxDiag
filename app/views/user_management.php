@@ -9,10 +9,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--dark); color: white; font-family: 'Inter', sans-serif; display: flex; }
         
-        /* Sidebar Consistency */
+        /* Sidebar Styles */
         .admin-sidebar { width: 280px; height: 100vh; background: #0f0f0f; border-right: 1px solid #222; padding: 40px 20px; position: fixed; }
         .admin-logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 50px; color: white; text-decoration: none; display: block; }
         .admin-logo span { color: var(--primary); }
+        
+        .nav-group { margin-bottom: 30px; }
+        .nav-label { font-size: 0.7rem; color: #444; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: block; }
         .nav-link { display: flex; align-items: center; gap: 12px; color: #888; text-decoration: none; padding: 12px; border-radius: 8px; transition: 0.3s; margin-bottom: 5px; }
         .nav-link:hover, .nav-link.active { background: #1a1a1a; color: var(--primary); }
 
@@ -37,12 +40,20 @@
 <body>
 
     <aside class="admin-sidebar">
-        <a href="index.php?action=admin_dashboard" class="admin-logo">Admin<span>Portal</span></a>
-        <a href="index.php?action=admin_dashboard" class="nav-link">Dashboard</a>
-        <a href="index.php?action=add_property" class="nav-link">Add Property</a>
-        <a href="index.php?action=reservations" class="nav-link">Reservations</a>
-        <a href="index.php?action=user_management" class="nav-link active">User Management</a>
+        <a href="#" class="admin-logo">Admin<span>Portal</span></a>
         
+        <div class="nav-group">
+            <span class="nav-label">Main Menu</span>
+            <a href="index.php?action=admin_dashboard" class="nav-link">Dashboard</a>
+            <a href="index.php?action=add_property" class="nav-link">Add Property</a>           
+            <a href="index.php?action=reservations" class="nav-link">Reservations</a>
+            <a href="index.php?action=user_management" class="nav-link active">User Management</a>
+        </div>
+
+        <div class="nav-group">
+            <span class="nav-label">Settings</span>
+            <a href="index.php?action=home" class="nav-link" style="color: #ff4444;">Exit Admin</a>
+        </div>
     </aside>
 
     <main class="main-admin">
@@ -90,26 +101,7 @@
         </table>
     </main>
 
-    <script>
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const targetUrl = this.getAttribute('href');
-
-                // Only apply transition if there is a valid link
-                if (targetUrl && targetUrl !== '#' && !targetUrl.startsWith('#')) {
-                    e.preventDefault(); 
-                    
-                    // Add a fade-out effect to the body
-                    document.body.style.transition = "opacity 0.4s ease";
-                    document.body.style.opacity = "0";
-                    
-                    setTimeout(() => {
-                        window.location.href = targetUrl;
-                    }, 400); 
-                }
-            });
-        });
-    </script>
+    
 </body>
 </html>
 

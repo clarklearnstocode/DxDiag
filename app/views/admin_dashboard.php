@@ -103,26 +103,7 @@
         </table>
     </main>
 
-    <script>
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const targetUrl = this.getAttribute('href');
-
-                // Only apply transition if there is a valid link
-                if (targetUrl && targetUrl !== '#' && !targetUrl.startsWith('#')) {
-                    e.preventDefault(); 
-                    
-                    // Add a fade-out effect to the body
-                    document.body.style.transition = "opacity 0.4s ease";
-                    document.body.style.opacity = "0";
-                    
-                    setTimeout(() => {
-                        window.location.href = targetUrl;
-                    }, 400); 
-                }
-            });
-        });
-    </script>
+    
 </body>
 </html>
 

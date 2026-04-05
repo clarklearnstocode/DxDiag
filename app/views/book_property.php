@@ -38,42 +38,163 @@ $currentVilla = isset($villaData[$villaId]) ? $villaData[$villaId] : $villaData[
     <title>EstateBook | Reserve Your Villa</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #c9a07a; --dark: #0a0a0a; --card: #161616; }
-        body { background: var(--dark); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 50px; }
-        
-        /* Header & Profile Styles */
-        .header-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 30px auto; }
-        
-        .user-profile-container { position: relative; }
-        .profile-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
-        .profile-icon { width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; transition: 0.3s; object-fit: cover; }
-        .profile-btn:hover .profile-icon { border-color: var(--primary); }
-        
-        .dropdown-menu { display: none; position: absolute; right: 0; top: 50px; background: #161616; border: 1px solid #222; border-radius: 12px; min-width: 160px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
-        .dropdown-menu a { color: #ccc; padding: 12px 20px; text-decoration: none; display: block; font-size: 0.85rem; transition: 0.2s; text-align: left; }
-        .dropdown-menu a:hover { background: #1f1f1f; color: var(--primary); }
-        .show { display: block; }
+    /* Global Reset & Fix */
+    * { 
+        margin: 0; 
+        padding: 0; 
+        box-sizing: border-box; /* The magic fix for all layout overlaps */
+    }
 
-        /* Booking Layout */
-        .booking-container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
-        
-        .property-preview img { width: 100%; border-radius: 20px; border: 1px solid #333; }
-        .property-info h1 { font-size: 2.5rem; margin: 20px 0 10px 0; }
-        .property-info p { color: #888; line-height: 1.6; }
-        
-        .booking-card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #222; height: fit-content; position: sticky; top: 50px; }
-        .price-tag { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 20px; display: block; }
-        
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        input { width: 100%; padding: 15px; background: #222; border: 1px solid #333; border-radius: 10px; color: white; outline: none; }
-        
-        .btn-confirm { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-confirm:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(201, 160, 122, 0.2); }
-        
-        .back-link { color: #555; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
-        .back-link:hover { color: var(--primary); }
-    </style>
+    :root { 
+        --primary: #c9a07a; 
+        --dark: #0a0a0a; 
+        --card: #161616; 
+    }
+
+    body { 
+        background: var(--dark); 
+        color: white; 
+        font-family: 'Inter', sans-serif; 
+        padding: 50px; 
+        line-height: 1.6;
+    }
+
+    /* Header & Profile Styles */
+    .header-nav { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        max-width: 1000px; 
+        margin: 0 auto 30px auto; 
+    }
+    
+    .user-profile-container { position: relative; }
+    .profile-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
+    .profile-icon { 
+        width: 40px; 
+        height: 40px; 
+        border-radius: 50%; 
+        border: 2px solid transparent; 
+        transition: 0.3s; 
+        object-fit: cover; 
+    }
+    .profile-btn:hover .profile-icon { border-color: var(--primary); }
+    
+    .dropdown-menu { 
+        display: none; 
+        position: absolute; 
+        right: 0; 
+        top: 50px; 
+        background: #161616; 
+        border: 1px solid #222; 
+        border-radius: 12px; 
+        min-width: 160px; 
+        z-index: 1000; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        overflow: hidden; 
+    }
+    .dropdown-menu a { 
+        color: #ccc; 
+        padding: 12px 20px; 
+        text-decoration: none; 
+        display: block; 
+        font-size: 0.85rem; 
+        transition: 0.2s; 
+        text-align: left; 
+    }
+    .dropdown-menu a:hover { background: #1f1f1f; color: var(--primary); }
+    .show { display: block; }
+
+    /* Booking Layout */
+    .booking-container { 
+        max-width: 1000px; 
+        margin: 0 auto; 
+        display: grid; 
+        grid-template-columns: 1.5fr 1fr; 
+        gap: 40px; 
+    }
+    
+    .property-preview img { 
+        width: 100%; 
+        border-radius: 20px; 
+        border: 1px solid #333; 
+    }
+    .property-info h1 { font-size: 2.5rem; margin: 20px 0 10px 0; }
+    .property-info p { color: #888; margin-bottom: 20px; }
+    
+    /* The Booking Card */
+    .booking-card { 
+        background: var(--card); 
+        padding: 30px; 
+        border-radius: 20px; 
+        border: 1px solid #222; 
+        height: fit-content; 
+        position: sticky; 
+        top: 50px; 
+    }
+    .price-tag { 
+        font-size: 1.5rem; 
+        font-weight: 800; 
+        color: var(--primary); 
+        margin-bottom: 20px; 
+        display: block; 
+    }
+    
+    .form-group { margin-bottom: 20px; }
+    
+    label { 
+        display: block; 
+        font-size: 0.75rem; 
+        color: #666; 
+        margin-bottom: 10px; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        font-weight: 600;
+    }
+    
+    input { 
+        width: 100%; 
+        padding: 15px; 
+        background: #222; 
+        border: 1px solid #333; 
+        border-radius: 10px; 
+        color: white; 
+        outline: none; 
+        transition: 0.3s;
+    }
+
+    input:focus {
+        border-color: var(--primary);
+        background: #2a2a2a;
+    }
+    
+    .btn-confirm { 
+        width: 100%; 
+        padding: 18px; 
+        background: var(--primary); 
+        border: none; 
+        border-radius: 12px; 
+        font-weight: 800; 
+        cursor: pointer; 
+        transition: 0.3s; 
+        margin-top: 10px; 
+        color: #000;
+    }
+    .btn-confirm:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 10px 20px rgba(201, 160, 122, 0.2); 
+    }
+    
+    .back-link { 
+        color: #555; 
+        text-decoration: none; 
+        font-size: 0.9rem; 
+        transition: 0.3s; 
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+    .back-link:hover { color: var(--primary); }
+</style>
 </head>
 <body>
 
