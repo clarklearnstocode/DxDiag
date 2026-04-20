@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EstateBook | Premium Real Estate</title>
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <!-- Link to CSS -->
-    <link rel="stylesheet" href="/EstateBook(0)/public/assets/css/landing.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
     
     <style>
         /* Smooth Scrolling */
@@ -27,35 +25,32 @@
             margin-bottom: 50px;
         }
 
-        /* Footer Styling */
+        /* Functional Button Styling */
+        .btn-book-lite {
+            display: inline-block;
+            margin-top: 15px;
+            color: #c9a07a;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid #c9a07a;
+            padding: 8px 20px;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        .btn-book-lite:hover { background: #c9a07a; color: black; }
+
         .main-footer { background: #070707; padding: 80px 10% 30px; border-top: 1px solid #1a1a1a; margin-top: 50px; }
         .footer-content { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 50px; margin-bottom: 50px; }
         .footer-brand p { color: #666; margin-top: 15px; font-size: 0.9rem; line-height: 1.6; }
         .footer-links h4, .footer-social h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: #c9a07a; margin-bottom: 25px; }
         .footer-links a { display: block; color: #888; text-decoration: none; margin-bottom: 12px; font-size: 0.9rem; transition: 0.3s; }
         .footer-links a:hover { color: #c9a07a; }
-        
         .social-icons { display: flex; gap: 15px; }
-        .social-icons a { 
-            width: 40px; height: 40px; background: #111; border: 1px solid #222; 
-            display: flex; align-items: center; justify-content: center; border-radius: 50%; 
-            transition: 0.3s; overflow: hidden;
-        }
-        
-        /* Icon Image Styling */
-        .social-icons a img {
-            width: 20px; /* Adjust size as needed */
-            height: 20px;
-            object-fit: contain;
-            filter: brightness(0) invert(1); /* Makes black icons white to match theme */
-            transition: 0.3s;
-        }
-
+        .social-icons a { width: 40px; height: 40px; background: #111; border: 1px solid #222; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.3s; overflow: hidden; }
+        .social-icons a img { width: 20px; height: 20px; object-fit: contain; filter: brightness(0) invert(1); transition: 0.3s; }
         .social-icons a:hover { background: #c9a07a; border-color: #c9a07a; transform: translateY(-3px); }
-        .social-icons a:hover img { filter: brightness(0); /* Makes icon black when background turns gold */ }
-
+        .social-icons a:hover img { filter: brightness(0); }
         .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid #111; color: #333; font-size: 0.8rem; }
-        
     </style>
 </head>
 <body id="home">
@@ -92,11 +87,13 @@
 
         <div class="floating-card">
             <div class="slideshow-container">
-                <img id="main-slide-img" src="assets/img/villa1.png" alt="Villa" style="transition: opacity 0.6s ease;">
+                <?php if (!empty($properties)): ?>
+                    <img id="main-slide-img" src="assets/img/<?php echo $properties[0]['image_path']; ?>" alt="Villa" style="transition: opacity 0.6s ease; width: 100%; height: 100%; object-fit: cover;">
+                <?php endif; ?>
             </div>
             <div class="card-info">
-                <h3 id="slide-title">Modern Zen Villa</h3>
-                <p id="slide-loc">Lacson St, Bacolod City</p>
+                <h3 id="slide-title"><?php echo $properties[0]['Property_Name'] ?? 'No Estates Available'; ?></h3>
+                <p id="slide-loc"><?php echo $properties[0]['Property_location'] ?? 'Check back later'; ?></p>
             </div>
         </div>
     </section>
@@ -108,21 +105,21 @@
         </div>
 
         <div class="property-grid-lite">
-            <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
-                <img src="assets/img/villa1.png" style="width:100%; border-radius:15px; margin-bottom:15px;">
-                <h4 style="color:#c9a07a;">Luxury Villa with Pool</h4>
-                <p style="color:#888; font-size:0.9rem;">Alijis, Bacolod City</p>
-            </div>
-            <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
-                <img src="assets/img/villa2.png" style="width:100%; border-radius:15px; margin-bottom:15px;">
-                <h4 style="color:#c9a07a;">Modern Condo</h4>
-                <p style="color:#888; font-size:0.9rem;">Lacson St, Bacolod City</p>
-            </div>
-            <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
-                <img src="assets/img/villa3.png" style="width:100%; border-radius:15px; margin-bottom:15px;">
-                <h4 style="color:#c9a07a;">Heritage Mansion</h4>
-                <p style="color:#888; font-size:0.9rem;">Silay City</p>
-            </div>
+            <?php if (!empty($properties)): ?>
+                <?php foreach ($properties as $property): ?>
+                    <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
+                        <img src="assets/img/<?php echo htmlspecialchars($property['image_path']); ?>" style="width:100%; height:200px; object-fit:cover; border-radius:15px; margin-bottom:15px;">
+                        
+                        <h4 style="color:#c9a07a; margin-bottom:5px;"><?php echo htmlspecialchars($property['Property_Name']); ?></h4>
+                        <p style="color:#888; font-size:0.9rem;">📍 <?php echo htmlspecialchars($property['Property_location']); ?></p>
+                        <p style="color:#fff; font-weight:800; margin-top:10px;">₱<?php echo number_format($property['Property_rate'], 2); ?></p>
+                        
+                        <a href="index.php?action=login" class="btn-book-lite">Book Now</a>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p style="text-align:center; grid-column: 1/-1; color:#666;">No properties available at the moment.</p>
+            <?php endif; ?>
         </div>
         
         <div style="text-align:center;">
@@ -155,12 +152,12 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2026 EstateBook Real Estate. All rights reserved.
+            &copy; <?php echo date("Y"); ?> EstateBook Real Estate. All rights reserved.
         </div>
     </footer>
 
     <script>
-        // Smooth scroll for anchors
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -170,31 +167,30 @@
             });
         });
 
-        // Slideshow Logic
-        const slidesData = [
-            { img: 'assets/img/villa1.png', title: 'Modern Zen Villa', loc: 'Lacson St, Bacolod City' },
-            { img: 'assets/img/villa2.png', title: 'Tropical Loft', loc: 'Alangilan, Bacolod City' },
-            { img: 'assets/img/villa3.png', title: 'Oceanview Mansion', loc: 'Silay City, Metro Bacolod' }
-        ];
-
+        // Dynamic Slideshow Logic - UPDATED TO NEW DATABASE KEYS
+        const slidesData = <?php echo json_encode($properties); ?>;
         const slideImg = document.getElementById('main-slide-img');
         const slideTitle = document.getElementById('slide-title');
         const slideLoc = document.getElementById('slide-loc');
         let currentSlide = 0;
 
         function showNextSlide() {
-            if (!slideImg) return; 
+            if (!slideImg || !slidesData || slidesData.length === 0) return; 
+            
             slideImg.style.opacity = '0';
             setTimeout(() => {
                 currentSlide = (currentSlide + 1) % slidesData.length;
-                slideImg.src = slidesData[currentSlide].img;
-                slideTitle.textContent = slidesData[currentSlide].title;
-                slideLoc.textContent = slidesData[currentSlide].loc;
+                // Updated keys to match Property_Name, etc.
+                slideImg.src = 'assets/img/' + slidesData[currentSlide].image_path;
+                slideTitle.textContent = slidesData[currentSlide].Property_Name;
+                slideLoc.textContent = slidesData[currentSlide].Property_location;
                 slideImg.style.opacity = '1';
             }, 600); 
         }
 
-        setInterval(showNextSlide, 4000);
+        if (slidesData && slidesData.length > 1) {
+            setInterval(showNextSlide, 4000);
+        }
     </script>
 </body>
 </html>

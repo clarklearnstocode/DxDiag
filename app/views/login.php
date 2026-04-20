@@ -6,79 +6,98 @@
     <title>EstateBook | Welcome Back</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Reusing the same logic for consistency */
         :root { --primary: #c9a07a; --dark: #0a0a0a; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
         body { background: var(--dark); color: white; display: flex; height: 100vh; overflow: hidden; }
 
+        /* Left Side: Image (To match Registration) */
         .image-side {
             flex: 1.5;
-            background: linear-gradient(to left, transparent, var(--dark)), 
+            background: linear-gradient(to right, transparent, var(--dark)), 
                         url('assets/img/landinging.png') center/cover;
+            display: none;
         }
 
-        .form-side { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 60px; }
+        /* Right Side: Form */
+        .form-side { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            padding: 60px; 
+            background: var(--dark);
+        }
+
+        @media (min-width: 768px) { .image-side { display: block; } }
+
         .form-container { max-width: 400px; width: 100%; margin: 0 auto; }
         
-        .logo { font-weight: 800; font-size: 1.5rem; margin-bottom: 40px; }
+        .logo { font-weight: 800; font-size: 1.5rem; margin-bottom: 40px; cursor: pointer; }
         .logo span { color: var(--primary); }
-        h2 { font-size: 2.2rem; margin-bottom: 10px; }
+        h2 { font-size: 2.2rem; margin-bottom: 10px; letter-spacing: -1px; }
         p.subtitle { color: #666; margin-bottom: 30px; }
 
         .input-group { margin-bottom: 20px; }
-        label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; }
+        label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         
-        input { width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; color: white; outline: none; }
-        input:focus { border-color: var(--primary); }
+        input { 
+            width: 100%; 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            padding: 15px; 
+            border-radius: 12px; 
+            color: white; 
+            outline: none; 
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); background: #222; }
 
-        .btn-login { width: 100%; background: var(--primary); color: black; border: none; padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-login:hover { transform: translateY(-3px); }
+        .btn-login { 
+            width: 100%; 
+            background: var(--primary); 
+            color: black; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+        .btn-login:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(201, 160, 122, 0.2); }
 
         .footer-link { text-align: center; margin-top: 30px; font-size: 0.85rem; color: #888; }
         .footer-link a { color: var(--primary); text-decoration: none; font-weight: 600; }
 
-        /* The Animation Definitions */
-@keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-40px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-@keyframes slideOutRight {
-    from { opacity: 1; transform: translateX(0); }
-    to { opacity: 0; transform: translateX(40px); }
-}
-body { animation: slideInLeft 0.5s ease-out; }
-.page-exit { animation: slideOutRight 0.4s ease-in forwards !important; }
+        .back-home {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #888;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .back-home:hover { color: var(--primary); }
 
-/* This class will be added via JS when a link is clicked */
-.page-exit {
-    animation: slideOutLeft 0.5s ease-in forwards;
-}
-
-.back-home {
-    position: absolute;
-    top: 30px;
-    left: 30px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: #888; /* Subtle gray */
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.back-home:hover {
-    color: var(--primary); /* Turns your signature tan/gold color on hover */
-    transform: translateX(-5px); /* Slight nudge to the left for feedback */
-}
-
-.back-home svg {
-    transition: transform 0.3s ease;
-}
-
-</style>
+        /* Animations */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        body { animation: slideInRight 0.5s ease-out; }
+        .page-exit { animation: slideOutLeft 0.4s ease-in forwards !important; }
+        
+        @keyframes slideOutLeft {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-40px); }
+        }
+    </style>
 </head>
 <body>
 
@@ -90,17 +109,25 @@ body { animation: slideInLeft 0.5s ease-out; }
         <span>Back to Home</span>
     </a>
 
+    <div class="image-side"></div>
 
     <div class="form-side">
         <div class="form-container">
-            <div class="logo">Estate<span>Book</span></div>
+            <div class="logo" onclick="window.location.href='index.php?action=landing'">Estate<span>Book</span></div>
+            
+            <?php if(isset($_GET['success'])): ?>
+                <p style="color: #4CAF50; background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; border: 1px solid #4CAF50;">
+                    Account created! Please sign in.
+                </p>
+            <?php endif; ?>
+
             <h2>Welcome Back</h2>
             <p class="subtitle">Enter your details to access your dashboard.</p>
 
             <form action="index.php?action=authenticate" method="POST">
                 <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" placeholder="clark@example.com" required>
+                    <label>Username or Email</label>
+                    <input type="text" name="login_identity" placeholder="clark_dev" required>
                 </div>
 
                 <div class="input-group">
@@ -115,33 +142,27 @@ body { animation: slideInLeft 0.5s ease-out; }
                 New to EstateBook? <a href="index.php?action=register">Create Account</a>
             </div>
 
-            <!-- Inside your login form container, near the bottom -->
-            <div style="margin-top: 25px; border-top: 1px solid #333; pt-20">
-                <p style="color: #555; font-size: 0.85rem;">
+            <div style="margin-top: 25px; border-top: 1px solid #222; padding-top: 20px;">
+                <p style="color: #555; font-size: 0.85rem; text-align: center;">
                     Are you a staff member? 
-                    <a href="index.php?action=admin_login" style="color: #d4a373; text-decoration: none; font-weight: bold;">
+                    <a href="index.php?action=admin_login" style="color: #c9a07a; text-decoration: none; font-weight: bold;">
                         Admin Portal →
                     </a>
                 </p>
             </div>
         </div>
     </div>
-    <div class="image-side"></div>
+
+    <script>
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const targetUrl = this.getAttribute('href');
+                if (!targetUrl || targetUrl.startsWith('#')) return;
+                e.preventDefault();
+                document.body.classList.add('page-exit');
+                setTimeout(() => { window.location.href = targetUrl; }, 100); 
+            });
+        });
+    </script>
 </body>
 </html>
-
-<script>
-    document.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const targetUrl = this.getAttribute('href');
-            if (!targetUrl || targetUrl.startsWith('#')) return;
-
-            e.preventDefault();
-            document.body.classList.add('page-exit');
-            
-            setTimeout(() => {
-                window.location.href = targetUrl;
-            }, 400); 
-        });
-    });
-</script>

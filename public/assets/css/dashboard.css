@@ -79,7 +79,13 @@ body {
 .btn-apply:hover { background: var(--primary); color: black; }
 
 /* Main Content */
-.main-content { margin-left: 260px; width: 100%; padding: 40px; }
+.main-content { 
+    margin-left: 260px; 
+    width: calc(100% - 260px); 
+    padding: 40px; 
+    min-height: 100vh;
+}
+
 .header-top { 
     display: flex; 
     justify-content: space-between; 
@@ -100,7 +106,7 @@ body {
 /* Profile Dropdown Styling */
 .user-profile-container { 
     position: relative; 
-    z-index: 9999; /* Higher than the property cards */
+    z-index: 9999; 
 }
 
 .profile-btn {
@@ -132,7 +138,7 @@ body {
     border: 1px solid #222;
     border-radius: 12px;
     min-width: 160px;
-    z-index: 10000; /* Ensure this is on top of everything */
+    z-index: 10000;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     overflow: hidden;
 }
@@ -151,66 +157,78 @@ body {
     color: var(--primary);
 }
 
-.show { 
-    display: block !important; 
-}
+.show { display: block !important; }
 
-/* Property Grid */
+/* Property Grid & Cards */
 .property-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-    gap: 30px; 
-    position: relative;
-    z-index: 1; /* Keep grid lower than dropdown */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 25px; 
+    width: 100%;
 }
 
-.card { 
-    background: var(--card); 
-    border-radius: 20px; 
+.property-card { 
+    background: #111; 
+    border-radius: 15px; 
     overflow: hidden; 
     border: 1px solid #222; 
-    cursor: pointer; 
-    transition: 0.3s; 
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensures all cards are same height */
 }
 
-.card:hover { transform: translateY(-10px); border-color: var(--primary); }
+.property-card:hover { transform: translateY(-8px); border-color: var(--primary); }
 
-.card-img { 
-    width: 100%; 
-    height: 220px; 
-    background-size: cover; 
-    background-position: center; 
-    position: relative; 
+.property-image {
+    width: 100%;
+    height: 200px; 
+    object-fit: cover; /* This crops the image instead of stretching it */
+    display: block;
 }
 
-.badge-avail { 
-    position: absolute; 
-    top: 15px; 
-    right: 15px; 
-    background: rgba(0,0,0,0.6); 
-    padding: 5px 12px; 
-    border-radius: 20px; 
-    font-size: 0.65rem; 
-    font-weight: 800; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
-    color: #00ff00; 
+.card-body { 
+    padding: 20px; 
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
-.price-chip { 
-    position: absolute; 
-    bottom: 15px; 
-    left: 15px; 
-    background: var(--primary); 
-    color: black; 
-    padding: 6px 15px; 
-    border-radius: 10px; 
-    font-weight: 800; 
-    font-size: 0.9rem; 
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
-.card-body { padding: 25px; }
-.card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; }
-.card-loc { color: #555; font-size: 0.85rem; margin-bottom: 20px; }
+.card-title { font-size: 1.1rem; font-weight: 700; color: white; }
 
-.card-specs { display: flex; gap: 15px; color: #888; font-size: 0.8rem; }
+.price { color: var(--primary); font-weight: 800; font-size: 1.1rem; }
+.price span { font-size: 0.7rem; color: #666; font-weight: 400; }
+
+.card-loc { color: #666; font-size: 0.8rem; margin-bottom: 15px; display: block; }
+
+.property-specs { 
+    display: flex; 
+    justify-content: space-between;
+    color: #888; 
+    font-size: 0.8rem; 
+    margin: 15px 0;
+    padding-top: 15px;
+    border-top: 1px solid #222;
+}
+
+.btn-view {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #1a1a1a;
+    color: white;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-view:hover { background: var(--primary); color: black; }

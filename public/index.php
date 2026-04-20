@@ -1,111 +1,84 @@
 <?php
-// Get the action from the URL
-$action = isset($_GET['action']) ? $_GET['action'] : 'home';
+// 1. ABSOLUTE TOP: Start the session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Define the path to your views folder
-$viewPath = __DIR__ . '/../app/views/';
+require_once __DIR__ . '/../app/controllers/PropertyController.php';
+require_once __DIR__ . '/../app/controllers/AuthController.php';
+
+$controller = new PropertyController();
+$auth = new AuthController();
+
+// 2. Determine Action
+$action = isset($_GET['action']) ? $_GET['action'] : 'home';
 
 switch ($action) {
     case 'home':
-    case 'landing': 
-        include $viewPath . 'landing.php';
+    case 'landing':
+        // If logged in, go to dashboard. Otherwise, show landing page.
+        if (isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=dashboard");
+            exit();
+        } else {
+            $controller->index(); 
+        }
         break;
 
-    case 'explore':
-        if (file_exists($viewPath . 'explore.php')) {
-            include $viewPath . 'explore.php';
-        } else {
-            echo "Error: explore.php not found in " . $viewPath;
-        }
+    case 'dashboard':
+        $auth->showDashboard();
         break;
 
     case 'login':
-        include $viewPath . 'login.php';
-        break;
-
-    case 'register':
-        include $viewPath . 'register.php';
-        break;
-
-    // --- AUTHENTICATION LOGIC (MOCK) ---
-    case 'authenticate':
-        // For the demo: Accept any POST and redirect to the user dashboard
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_SESSION['user_id'])) {
             header("Location: index.php?action=dashboard");
             exit();
         }
+        $auth->showLogin();
         break;
 
-    // --- USER SIDE ---
-    case 'dashboard':
-        if (file_exists($viewPath . 'dashboard.php')) {
-            include $viewPath . 'dashboard.php';
-        } else {
-            echo "Error: dashboard.php not found. Please create it in " . $viewPath;
-        }
+    case 'authenticate':
+    case 'handleLogin': // Matches your controller method
+        $auth->handleLogin();
         break;
 
-        case 'dashboard':
-        include '../app/views/dashboard.php';
+    case 'register':
+    case 'signup':
+        $auth->showSignup();
         break;
-    case 'my_bookings':
-        include '../app/views/my_bookings.php';
+
+    case 'handleSignup': // Matches the action in your register.php form
+    case 'doSignup':
+        $auth->handleSignup();
         break;
+
     case 'profile':
-        include '../app/views/profile.php';
+        $auth->showProfile();
         break;
 
-    // --- ADMIN SIDE ---
-    case 'admin_dashboard':
-        if (file_exists($viewPath . 'admin_dashboard.php')) {
-            include $viewPath . 'admin_dashboard.php';
-        } else {
-            echo "Error: admin_dashboard.php not found in " . $viewPath;
-        }
+    case 'my_bookings':
+        $auth->showMyBookings();
         break;
 
-    case 'add_property':
-        if (file_exists($viewPath . 'add_property.php')) {
-            include $viewPath . 'add_property.php';
-        } else {
-            echo "Error: add_property.php not found in " . $viewPath;
-        }
+    case 'book':
+    case 'view_property': // Add this line here!
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $controller->book($id); 
         break;
 
-    case 'admin_login':
-        if (file_exists($viewPath . 'admin_login.php')) {
-            include $viewPath . 'admin_login.php';
-        } else {
-            echo "Error: admin_login.php not found in " . $viewPath;
-        }
+    case 'confirm_booking':
+        $controller->confirmBooking();
         break;
 
-    case 'reservations':
-    if (file_exists($viewPath . 'reservations.php')) {
-        include $viewPath . 'reservations.php';
-    } else {
-        echo "Error: reservations.php not found in " . $viewPath;
-    }
-    break;  
-
-    case 'user_management':  // No spaces, all lowercase
-        if (file_exists($viewPath . 'user_management.php')) {
-            include $viewPath . 'user_management.php';
-        } else {
-            echo "Error: user_management.php not found in " . $viewPath;
-        }
-        break;
-
-    case 'dashboard':
-      include $viewPath . 'dashboard.php';
-      break;
-
-    case 'book_property':
-        // This is the page the user sees after clicking a villa
-        include $viewPath . 'book_property.php';
+    case 'logout':
+        $auth->logout(); // Using the method we added to AuthController
         break;
 
     default:
-        include $viewPath . 'landing.php';
+        if (isset($_SESSION['user_id'])) {
+            $auth->showDashboard();
+        } else {
+            $controller->index();
+        }
         break;
 }
