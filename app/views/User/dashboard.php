@@ -71,6 +71,7 @@
 
                     <div class="property-specs">
                         <span>📐 <?php echo $property['Property_size'] ?? '0'; ?>m²</span>
+                        <span>🌊 <?php echo $property['Has_pool'] ?? '0'; ?></span>
                         <span>🛏️ <?php echo $property['Property_capacity'] ?? '0'; ?>BR</span>
                         <span>🚿 <?php echo $property['Property_bathrooms'] ?? '0'; ?></span>
                     </div>

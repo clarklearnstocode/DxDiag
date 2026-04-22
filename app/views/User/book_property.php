@@ -43,6 +43,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
             overflow: hidden; 
         }
+        
         .dropdown-menu a { color: #ccc; padding: 12px 20px; text-decoration: none; display: block; font-size: 0.85rem; transition: 0.2s; }
         .dropdown-menu a:hover { background: #1f1f1f; color: var(--primary); }
         .show { display: block; }
@@ -142,6 +143,7 @@
                 
                 <div style="display:flex; gap: 30px; margin-top: 15px; color: #888; font-size: 0.95rem;">
                     <span><strong style="color:white;">Capacity:</strong> <?php echo $property['Property_capacity']; ?> Guests</span> 
+                    <span><strong style="color:white;">Pool:</strong> <?php echo $property['Has_pool']; ?></span> 
                     <span><strong style="color:white;">Size:</strong> <?php echo $property['Property_size'] ?? '150'; ?> m²</span>
                     <span><strong style="color:white;">Type:</strong> Luxury Villa</span>
                 </div>

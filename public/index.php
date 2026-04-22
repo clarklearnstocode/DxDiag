@@ -4,16 +4,23 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// 2. Load Controllers
 require_once __DIR__ . '/../app/controllers/PropertyController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
+require_once __DIR__ . '/../app/controllers/AdminController.php';
+require_once __DIR__ . '/../app/controllers/BookingController.php';
 
+// 3. Initialize Controllers
 $controller = new PropertyController();
 $auth = new AuthController();
+$admin = new AdminController();
+$booking = new BookingController();
 
-// 2. Determine Action
+// 4. Determine Action
 $action = isset($_GET['action']) ? $_GET['action'] : 'home';
 
 switch ($action) {
+    /* --- USER ROUTES --- */
     case 'home':
     case 'landing':
         // If logged in, go to dashboard. Otherwise, show landing page.
@@ -38,7 +45,7 @@ switch ($action) {
         break;
 
     case 'authenticate':
-    case 'handleLogin': // Matches your controller method
+    case 'handleLogin':
         $auth->handleLogin();
         break;
 
@@ -47,7 +54,7 @@ switch ($action) {
         $auth->showSignup();
         break;
 
-    case 'handleSignup': // Matches the action in your register.php form
+    case 'handleSignup':
     case 'doSignup':
         $auth->handleSignup();
         break;
@@ -61,19 +68,77 @@ switch ($action) {
         break;
 
     case 'book':
-    case 'view_property': // Add this line here!
+    case 'view_property':
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
         $controller->book($id); 
         break;
 
+    // FIX: Only one confirm_booking case — handles POST from user booking form
     case 'confirm_booking':
         $controller->confirmBooking();
         break;
 
     case 'logout':
-        $auth->logout(); // Using the method we added to AuthController
+        $auth->logout();
         break;
 
+    /* --- ADMIN ROUTES --- */
+    case 'admin_login':
+        $admin->showLogin();
+        break;
+
+    case 'do_admin_login':
+        $admin->handleLogin();
+        break;
+
+    case 'admin_dashboard':
+        $admin->showDashboard();
+        break;
+
+    case 'add_property':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $admin->handleAddProperty();
+        } else {
+            $admin->showAddProperty();
+        }
+        break;
+
+    case 'do_add_property':
+        $admin->handleAddProperty();
+        break;
+
+    case 'reservations':
+        $admin->showReservations();
+        break;
+
+    // FIX: manage_booking — shows booking detail page with approve/reject actions
+    case 'manage_booking':
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $admin->manageBooking($id);
+        break;
+
+    case 'update_booking_status':
+        $admin->updateBookingStatus();
+        break;
+
+    case 'approve_booking':
+        if (isset($_GET['id'])) {
+            $admin->approveBooking($_GET['id']);
+        }
+        break;
+
+    // FIX: user_management — now loads real data from DB
+    case 'user_management':
+        $admin->showUserManagement();
+        break;
+
+    case 'delete_user':
+        if (isset($_GET['id'])) {
+            $admin->deleteUser($_GET['id']);
+        }
+        break;
+
+    /* --- DEFAULT --- */
     default:
         if (isset($_SESSION['user_id'])) {
             $auth->showDashboard();

@@ -67,45 +67,46 @@
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card"><h2>24</h2><p>Total Properties</p></div>
-            <div class="stat-card"><h2>156</h2><p>Total Bookings</p></div>
-            <div class="stat-card"><h2>$2.4M</h2><p>Revenue (Mock)</p></div>
-            <div class="stat-card"><h2>12</h2><p>Pending Reviews</p></div>
+                <div class="stat-card"><h2><?php echo $propCount; ?></h2><p>Total Properties</p></div>
+                <div class="stat-card"><h2><?php echo $bookCount; ?></h2><p>Total Bookings</p></div>
+                <div class="stat-card"><h2>₱<?php echo number_format($revenue ?? 0); ?></h2><p>Total Revenue</p></div>
+                <div class="stat-card"><h2>Online</h2><p>System Status</p></div>
         </div>
 
-        <h2 style="margin-bottom: 20px;">Recent Listings</h2>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Property Name</th>
-                    <th>Location</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Modern Zen Villa</td>
-                    <td>Lacson St, Bacolod</td>
-                    <td>₱12,500,000</td>
-                    <td><span class="status-pill available">Available</span></td>
-                    <td><a href="#" style="color: var(--primary); text-decoration: none;">Edit</a></td>
-                </tr>
-                <tr>
-                    <td>Oceanview Mansion</td>
-                    <td>Silay City</td>
-                    <td>₱45,000,000</td>
-                    <td><span class="status-pill available">Available</span></td>
-                    <td><a href="#" style="color: var(--primary); text-decoration: none;">Edit</a></td>
-                </tr>
-            </tbody>
-        </table>
+           <h2 style="margin-bottom: 20px; margin-top: 40px;">Recent Listings</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Property Name</th>
+            <th>Location</th>
+            <th>Rate</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if (!empty($recent_properties)): ?>
+            <?php foreach($recent_properties as $row): ?>
+            <tr>
+                <td><strong><?php echo htmlspecialchars($row['Property_Name']); ?></strong></td>
+                <td><?php echo htmlspecialchars($row['Property_location']); ?></td>
+                <td>₱<?php echo number_format($row['Property_rate']); ?></td>
+                <td><span class="status-pill available"><?php echo htmlspecialchars($row['Status']); ?></span></td>
+                <td>
+                    <a href="index.php?action=add_property&id=<?php echo $row['Property_Id']; ?>" 
+                       style="color: var(--primary); text-decoration: none; font-weight: 600;">Edit</a>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="5" style="text-align: center; color: #666;">No properties found in the database.</td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
     </main>
 
     
-</body>
-</html>
-
 </body>
 </html>

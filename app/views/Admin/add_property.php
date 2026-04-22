@@ -72,55 +72,57 @@
                 <p style="color: #666;">Fill in the details to add a new estate to your curated collection.</p>
             </header>
 
-            <form class="form-card" action="index.php?action=admin_dashboard" method="POST">
+            <form class="form-card" action="index.php?action=do_add_property" method="POST"             enctype="multipart/form-data">
                 <div class="input-group full-width">
                     <label>Property Name</label>
-                    <input type="text" placeholder="e.g. Modern Glass Villa" required>
+                    <input type="text" name="property_name" placeholder="e.g. Modern Glass Villa" required>
                 </div>
 
                 <div class="form-grid">
                     <div class="input-group">
-                        <label>Location (Bacolod & Nearby)</label>
-                        <select required>
-                            <option value="Bacolod City">Bacolod City</option>
-                            <option value="Silay City">Silay City</option>
-                            <option value="Talisay City">Talisay City</option>
-                            <option value="Don Salvador Benedicto">Don Salvador Benedicto</option>
-                        </select>
+                        <label>Location (City or Specific Address)</label>
+                        <input type="text" 
+                            name="location" 
+                            placeholder="e.g. Lacson St., Bacolod City" 
+                            required>
                     </div>
                     <div class="input-group">
-                        <label>Price (PHP)</label>
-                        <input type="number" placeholder="₱ 0.00" required>
+                        <label>Rate per Night (PHP)</label>
+                        <input type="number" name="rate" placeholder="₱ 0.00" required>
                     </div>
 
                     <div class="input-group full-width" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                         <div class="input-subgroup">
                             <label>Bedrooms</label>
-                            <input type="number" min="0" placeholder="0" required>
+                            <input type="number" name="bedrooms" min="0" placeholder="0" required>
                         </div>
                         <div class="input-subgroup">
                             <label>Bathrooms</label>
-                            <input type="number" min="0" placeholder="0" required>
+                            <input type="number" name="bathrooms" min="0" placeholder="0" required>
                         </div>
                         <div class="input-subgroup">
-                            <label>Square Meters (sqm)</label>
-                            <input type="number" min="0" placeholder="0 m²" required>
+                            <label>Square Meters</label>
+                            <input type="number" name="size" min="0" placeholder="0 m²" required>
                         </div>
                     </div>
-                </div>
-
-                <div class="input-group full-width">
-                    <label>Description</label>
-                    <textarea rows="4" placeholder="Describe the features, amenities, and unique selling points..."></textarea>
                 </div>
 
                 <div class="input-group full-width">
                     <label>Featured Image</label>
                     <div class="image-upload-box" onclick="document.getElementById('file-input').click()">
-                        <p style="color: #888;">Click to upload or drag and drop</p>
-                        <span style="font-size: 0.75rem; color: #444;">PNG, JPG up to 10MB</span>
-                        <input type="file" id="file-input" style="display: none;">
+                        <p id="file-name" style="color: #888;">Click to upload image</p>
+                        <input type="file" name="property_image" id="file-input" style="display: none;" onchange="document.getElementById('file-name').innerText = this.files[0].name">
                     </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Property Description</label>
+                    <textarea 
+                        name="description" 
+                        rows="5" 
+                        placeholder="Describe the architectural style, premium amenities (e.g., infinity pool, smart home features), and the unique atmosphere of this Bacolod estate..."
+                        required
+                    ></textarea>
                 </div>
 
                 <button type="submit" class="btn-save">Publish Property</button>

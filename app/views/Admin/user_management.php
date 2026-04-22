@@ -67,43 +67,50 @@
                 <tr>
                     <th>User</th>
                     <th>Email Address</th>
+                    <th>Phone</th>
                     <th>Role</th>
-                    <th>Joined Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        <div class="user-profile">
-                            <div class="avatar">CS</div>
-                            <span style="font-weight: 600;">Clark Sabordo</span>
-                        </div>
-                    </td>
-                    <td>ksabordo22@gmail.com</td>
-                    <td><span class="role-badge role-admin">Administrator</span></td>
-                    <td>Jan 15, 2026</td>
-                    <td><button class="btn-action">×</button></td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="user-profile">
-                            <div class="avatar">JD</div>
-                            <span style="font-weight: 600;">Juan Dela Cruz</span>
-                        </div>
-                    </td>
-                    <td>juan.dc@example.ph</td>
-                    <td><span class="role-badge role-client">Client</span></td>
-                    <td>Feb 02, 2026</td>
-                    <td><button class="btn-action">×</button></td>
-                </tr>
+                <?php if (!empty($users)): ?>
+                    <?php foreach ($users as $u): ?>
+                    <tr>
+                        <td>
+                            <div class="user-profile">
+                                <div class="avatar">
+                                    <?php
+                                        $parts = explode(' ', trim($u['Name']));
+                                        $initials = strtoupper(substr($parts[0], 0, 1) . (isset($parts[1]) ? substr($parts[1], 0, 1) : ''));
+                                        echo htmlspecialchars($initials);
+                                    ?>
+                                </div>
+                                <div>
+                                    <span style="font-weight: 600; display:block;"><?php echo htmlspecialchars($u['Name']); ?></span>
+                                    <span style="font-size:0.78rem; color:#555;">@<?php echo htmlspecialchars($u['Username']); ?></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><?php echo htmlspecialchars($u['Email']); ?></td>
+                        <td><?php echo htmlspecialchars($u['Phone'] ?? '—'); ?></td>
+                        <td><span class="role-badge role-client">Client</span></td>
+                        <td>
+                            <a href="index.php?action=delete_user&id=<?php echo $u['User_Id']; ?>"
+                               class="btn-action"
+                               title="Delete user"
+                               onclick="return confirm('Delete user <?php echo htmlspecialchars(addslashes($u['Name'])); ?>? This cannot be undone.');">×</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:#555; padding: 40px;">No registered users yet.</td>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </main>
 
     
-</body>
-</html>
-
 </body>
 </html>

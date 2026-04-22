@@ -37,56 +37,53 @@ class PropertyController {
      * Handles the reservation process
      */
     public function confirmBooking() {
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login");
-            exit();
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: index.php?action=login");
+        exit();
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $property_id = $_POST['property_id'];
+        $user_id = $_SESSION['user_id']; 
+        // Fixed: Use lowercase to match form field names
+        $check_in = $_POST['check_in'] ?? '';
+        $check_out = $_POST['check_out'] ?? '';
+        $payment_method = $_POST['payment_method'];
+        
+        if (empty($check_in) || empty($check_out)) {
+            die("Please select check-in and check-out dates.");
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $property_id = $_POST['property_id'];
-            $user_id = $_SESSION['user_id']; 
-            $check_in = $_POST['check_in'];
-            $check_out = $_POST['check_out'];
-            $payment_method = $_POST['payment_method'];
+        $property = $this->propertyModel->getOne($property_id);
+        if (!$property) { die("Invalid property selection."); }
 
-            // 1. Fetch property rate to calculate total
-            $property = $this->propertyModel->getOne($property_id);
-            if (!$property) {
-                die("Invalid property selection.");
-            }
+        $date1 = new DateTime($check_in);
+        $date2 = new DateTime($check_out);
+        $days = $date1->diff($date2)->days ?: 1;
+        $total_amount = $property['Property_rate'] * $days;
 
-            // 2. Calculate total amount based on days
-            $date1 = new DateTime($check_in);
-            $date2 = new DateTime($check_out);
-            $interval = $date1->diff($date2);
-            $days = $interval->days;
-            if ($days <= 0) $days = 1; // Minimum 1 night charge
+        try {
+            $this->db->beginTransaction();
 
-            $total_amount = $property['Property_rate'] * $days;
+            // 1. Insert into Payment (with Payment_Date)
+            $paySql = "INSERT INTO Payment (Payment_Date, Payment_Method, Amount, Status) VALUES (CURDATE(), ?, ?, 'Paid')";
+            $payStmt = $this->db->prepare($paySql);
+            $payStmt->execute([$payment_method, $total_amount]);
+            $payment_id = $this->db->lastInsertId();
 
-            try {
-                $this->db->beginTransaction();
+            // 2. Insert Booking with Booking_Date, Check_In, Check_Out
+            $bookSql = "INSERT INTO Booking (User_Id, Property_Id, Booking_Date, Check_In, Check_Out, Payment_Id, Reservation_Status)
+                        VALUES (?, ?, CURDATE(), ?, ?, ?, 'Pending')";
+            $bookStmt = $this->db->prepare($bookSql);
+            $bookStmt->execute([$user_id, $property_id, $check_in, $check_out, $payment_id]);
 
-                // 3. Insert into Payment Table
-                $paySql = "INSERT INTO Payment (Payment_Method, Amount, Status) VALUES (?, ?, 'Paid')";
-                $payStmt = $this->db->prepare($paySql);
-                $payStmt->execute([$payment_method, $total_amount]);
-                $payment_id = $this->db->lastInsertId();
-
-                // 4. Insert into Booking Table
-                // Note: Using check_in as the Booking_Date for reservation context
-                $bookSql = "INSERT INTO Booking (User_Id, Property_Id, Booking_Date, Payment_Id, Reservation_Status) 
-                            VALUES (?, ?, ?, ?, 'Confirmed')";
-                $bookStmt = $this->db->prepare($bookSql);
-                $bookStmt->execute([$user_id, $property_id, $check_in, $payment_id]);
-
-                $this->db->commit();
-                header("Location: index.php?action=my_bookings&status=success");
-                exit();
-            } catch (Exception $e) {
-                $this->db->rollBack();
-                die("Database Error: " . $e->getMessage());
-            }
+            $this->db->commit();
+            header("Location: index.php?action=my_bookings&status=success");
+            exit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            die("Database Error: " . $e->getMessage());
         }
     }
+}
 }

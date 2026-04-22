@@ -69,9 +69,9 @@
         <div class="logo">Estate<span>Book</span></div>
         <span class="badge">Administrative Access</span>
         
-        <form action="index.php?action=admin_dashboard" method="POST">
-            <input type="text" placeholder="Admin Username" required>
-            <input type="password" placeholder="Passcode" required>
+        <form action="index.php?action=do_admin_login" method="POST">
+            <input type="text" name="username" placeholder="Admin Username" required>
+            <input type="password" name="passcode" placeholder="Passcode" required>
             <button type="submit" class="btn-admin-login">Access Dashboard</button>
         </form>
 

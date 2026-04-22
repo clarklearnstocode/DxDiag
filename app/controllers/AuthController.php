@@ -63,14 +63,18 @@ class AuthController {
 
         $query = "SELECT 
                     b.Booking_Id, 
-                    b.Booking_Date, 
+                    b.Booking_Date,
+                    b.Check_In,
+                    b.Check_Out,
                     b.Reservation_Status, 
                     p.Property_Name, 
-                    p.Property_location, 
-                    pay.Amount 
+                    p.Property_location,
+                    p.image_path,
+                    pay.Amount,
+                    pay.Payment_Method
                   FROM Booking b 
                   JOIN Property p ON b.Property_Id = p.Property_Id 
-                  JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                  LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
                   WHERE b.User_Id = ? 
                   ORDER BY b.Booking_Id DESC";
                   
