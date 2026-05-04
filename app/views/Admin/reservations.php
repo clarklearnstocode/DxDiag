@@ -41,18 +41,38 @@
                     $ci = $res['Check_In'] ?? null;
                     $co = $res['Check_Out'] ?? null;
                     $st = $res['Reservation_Status'] ?? 'Pending';
-                    $badgeClass = strtolower($st) === 'confirmed' ? 'badge-confirmed' : (strtolower($st) === 'rejected' ? 'badge-rejected' : 'badge-pending');
+                    $badgeClass = match(strtolower($st)) {
+                        'confirmed' => 'badge-confirmed',
+                        'rejected'  => 'badge-rejected',
+                        'cancelled' => 'badge-cancelled',
+                        'completed' => 'badge-completed',
+                        default     => 'badge-pending',
+                    };
                 ?>
                 <tr>
                     <td style="color:var(--text-faint);font-size:0.8rem;">#<?php echo $res['Booking_Id']; ?></td>
                     <td><strong><?php echo htmlspecialchars($res['Name'] ?? 'Unknown'); ?></strong></td>
                     <td><strong><?php echo htmlspecialchars($res['Property_Name'] ?? 'N/A'); ?></strong></td>
-                    <td style="font-size:0.82rem;line-height:1.9;">
-                        <span style="color:var(--primary);font-weight:700;font-size:0.7rem;">IN</span>
-                        <?php echo ($ci && $ci !== '0000-00-00') ? date('M d, Y', strtotime($ci)) : '<span style="color:var(--danger);">Not set</span>'; ?>
+                    <td style="font-size:0.82rem;line-height:1.75;">
+                        <span style="color:var(--primary);font-weight:700;font-size:0.68rem;letter-spacing:0.5px;">IN</span>&nbsp;
+                        <?php if ($ci && $ci !== '0000-00-00'): ?>
+                            <?php echo date('M d, Y', strtotime($ci)); ?>
+                            <?php if (!empty($res['Check_In_Time'])): ?>
+                                <span style="color:#555;font-size:0.75rem;">&nbsp;·&nbsp;<?php echo date('g:i A', strtotime($res['Check_In_Time'])); ?></span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span style="color:var(--danger);">Not set</span>
+                        <?php endif; ?>
                         <br>
-                        <span style="color:var(--primary);font-weight:700;font-size:0.7rem;">OUT</span>
-                        <?php echo ($co && $co !== '0000-00-00') ? date('M d, Y', strtotime($co)) : '<span style="color:var(--danger);">Not set</span>'; ?>
+                        <span style="color:var(--primary);font-weight:700;font-size:0.68rem;letter-spacing:0.5px;">OUT</span>&nbsp;
+                        <?php if ($co && $co !== '0000-00-00'): ?>
+                            <?php echo date('M d, Y', strtotime($co)); ?>
+                            <?php if (!empty($res['Check_Out_Time'])): ?>
+                                <span style="color:#555;font-size:0.75rem;">&nbsp;·&nbsp;<?php echo date('g:i A', strtotime($res['Check_Out_Time'])); ?></span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span style="color:var(--danger);">Not set</span>
+                        <?php endif; ?>
                     </td>
                     <td><strong>₱<?php echo number_format($res['Amount'] ?? 0); ?></strong></td>
                     <td style="color:var(--text-muted);font-size:0.82rem;"><?php echo htmlspecialchars($res['Payment_Method'] ?? 'N/A'); ?></td>

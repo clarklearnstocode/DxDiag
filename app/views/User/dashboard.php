@@ -31,12 +31,24 @@
             <label class="checkbox-group">
                 <input type="checkbox" id="filter-pool"> <span>🏊 Has Swimming Pool</span>
             </label>
-            <label class="checkbox-group">
-                <input type="checkbox" id="filter-bath3"> <span>🚿 3+ Bathrooms</span>
-            </label>
-            <label class="checkbox-group">
-                <input type="checkbox" id="filter-cap6"> <span>👥 6+ Guest Capacity</span>
-            </label>
+        </div>
+
+        <!-- Guest Capacity -->
+        <div class="filter-section">
+            <span class="filter-label">Min. Guest Capacity</span>
+            <input type="number" id="filterCapacity" class="sidebar-input" placeholder="e.g. 6" min="1">
+        </div>
+
+        <!-- Bathrooms -->
+        <div class="filter-section">
+            <span class="filter-label">Min. Bathrooms</span>
+            <input type="number" id="filterBathrooms" class="sidebar-input" placeholder="e.g. 2" min="0">
+        </div>
+
+        <!-- Villa Size -->
+        <div class="filter-section">
+            <span class="filter-label">Min. Size (m²)</span>
+            <input type="number" id="filterSize" class="sidebar-input" placeholder="e.g. 150" min="0">
         </div>
 
         <!-- Price Range Filter -->
@@ -130,12 +142,14 @@
                          data-pool="<?php echo $hasPool ? '1' : '0'; ?>"
                          data-bathrooms="<?php echo intval($property['Property_bathrooms'] ?? 0); ?>"
                          data-capacity="<?php echo intval($property['Property_capacity'] ?? 0); ?>"
+                         data-size="<?php echo intval($property['Property_size'] ?? 0); ?>"
                          data-rate="<?php echo floatval($property['Property_rate'] ?? 0); ?>">
 
                         <div class="card-image-wrap">
                             <img src="assets/img/<?php echo htmlspecialchars($property['image_path']); ?>"
                                  alt="<?php echo htmlspecialchars($property['Property_Name']); ?>"
-                                 class="property-image">
+                                 class="property-image"
+                                 onerror="this.onerror=null;this.src='assets/img/villa1.png'">
                             <div class="card-status-tag <?php echo $isOccupied ? 'tag-occupied' : 'tag-available'; ?>">
                                 <?php echo $isOccupied ? '🔴 Occupied' : '🟢 Available'; ?>
                             </div>
@@ -205,15 +219,17 @@
         r.addEventListener('change', applyFilters);
     });
     document.getElementById('filter-pool').addEventListener('change', applyFilters);
-    document.getElementById('filter-bath3').addEventListener('change', applyFilters);
-    document.getElementById('filter-cap6').addEventListener('change', applyFilters);
+    document.getElementById('filterCapacity').addEventListener('input', applyFilters);
+    document.getElementById('filterBathrooms').addEventListener('input', applyFilters);
+    document.getElementById('filterSize').addEventListener('input', applyFilters);
 
     function applyFilters() {
         var query    = searchBar.value.trim().toLowerCase();
         var avail    = document.querySelector('input[name="availability"]:checked').value;
         var needPool = document.getElementById('filter-pool').checked;
-        var need3Bath= document.getElementById('filter-bath3').checked;
-        var need6Cap = document.getElementById('filter-cap6').checked;
+        var minCap   = parseInt(document.getElementById('filterCapacity').value)  || 0;
+        var minBath  = parseInt(document.getElementById('filterBathrooms').value) || 0;
+        var minSize  = parseInt(document.getElementById('filterSize').value)      || 0;
         var minPrice = parseFloat(document.getElementById('priceMin').value) || 0;
         var maxPrice = parseFloat(document.getElementById('priceMax').value) || Infinity;
 
@@ -221,22 +237,24 @@
         var visible = 0;
 
         cards.forEach(function(card) {
-            var name     = card.dataset.name;
-            var loc      = card.dataset.location;
-            var status   = card.dataset.status;
-            var pool     = card.dataset.pool === '1';
-            var bath     = parseInt(card.dataset.bathrooms);
-            var cap      = parseInt(card.dataset.capacity);
-            var rate     = parseFloat(card.dataset.rate);
+            var name   = card.dataset.name;
+            var loc    = card.dataset.location;
+            var status = card.dataset.status;
+            var pool   = card.dataset.pool === '1';
+            var bath   = parseInt(card.dataset.bathrooms);
+            var cap    = parseInt(card.dataset.capacity);
+            var size   = parseInt(card.dataset.size   || 0);
+            var rate   = parseFloat(card.dataset.rate);
 
             var matchSearch = !query || name.includes(query) || loc.includes(query);
             var matchAvail  = avail === 'all' || status === avail;
             var matchPool   = !needPool || pool;
-            var matchBath   = !need3Bath || bath >= 3;
-            var matchCap    = !need6Cap  || cap  >= 6;
+            var matchCap    = cap  >= minCap;
+            var matchBath   = bath >= minBath;
+            var matchSize   = size >= minSize;
             var matchPrice  = rate >= minPrice && rate <= maxPrice;
 
-            var show = matchSearch && matchAvail && matchPool && matchBath && matchCap && matchPrice;
+            var show = matchSearch && matchAvail && matchPool && matchCap && matchBath && matchSize && matchPrice;
             card.style.display = show ? '' : 'none';
             if (show) visible++;
         });
@@ -247,9 +265,10 @@
 
     function resetFilters() {
         document.querySelector('input[name="availability"][value="all"]').checked = true;
-        document.getElementById('filter-pool').checked  = false;
-        document.getElementById('filter-bath3').checked = false;
-        document.getElementById('filter-cap6').checked  = false;
+        document.getElementById('filter-pool').checked = false;
+        document.getElementById('filterCapacity').value  = '';
+        document.getElementById('filterBathrooms').value = '';
+        document.getElementById('filterSize').value      = '';
         document.getElementById('priceMin').value = '';
         document.getElementById('priceMax').value = '';
         searchBar.value = '';

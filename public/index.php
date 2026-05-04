@@ -21,6 +21,16 @@ require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/AdminController.php';
 require_once __DIR__ . '/../app/controllers/BookingController.php';
 
+// 3. Auto-release expired bookings on every page load
+//    This is the mechanism that makes properties automatically
+//    go back to "Available" once a booking's check-out time passes.
+require_once __DIR__ . '/../app/services/AutoRelease.php';
+require_once __DIR__ . '/../config/Database.php';
+$_autoDb      = (new Database())->getConnection();
+$_autoRelease = new AutoRelease($_autoDb);
+$_autoRelease->run();
+unset($_autoDb, $_autoRelease);   // clean up — controllers open their own connections
+
 // 3. Initialize Controllers
 $controller = new PropertyController();
 $auth       = new AuthController();
@@ -89,6 +99,30 @@ switch ($action) {
 
     case 'confirm_booking':
         $controller->confirmBooking();
+        break;
+
+    case 'booking_confirmation':
+        $controller->showBookingConfirmation();
+        break;
+
+    case 'cancel_booking':
+        $controller->cancelBooking();
+        break;
+
+    case 'edit_booking':
+        $controller->showEditBooking();
+        break;
+
+    case 'update_booking':
+        $controller->updateBooking();
+        break;
+
+    case 'verify_otp':
+        $auth->showVerifyOTP();
+        break;
+
+    case 'handle_verify_otp':
+        $auth->handleVerifyOTP();
         break;
 
     case 'logout':

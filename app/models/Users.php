@@ -3,7 +3,6 @@ class User {
     private $conn;
     private $table_name = "User";
 
-    // Object properties matching your ERD
     public $User_Id;
     public $Name;
     public $Phone;

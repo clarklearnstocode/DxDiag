@@ -299,9 +299,11 @@ body {
 .badge-available { background: rgba(46,204,113,0.1);  color: var(--success); }
 .badge-occupied  { background: rgba(231,76,60,0.1);   color: var(--danger); }
 .badge-pending   { background: rgba(241,196,15,0.1);  color: var(--warning); }
-.badge-confirmed { background: rgba(46,204,113,0.1);  color: var(--success); }
-.badge-rejected  { background: rgba(231,76,60,0.1);   color: var(--danger); }
-.badge-client    { background: rgba(255,255,255,0.05); color: #777; }
+.badge-confirmed  { background: rgba(46,204,113,0.1);  color: var(--success); }
+.badge-rejected   { background: rgba(231,76,60,0.1);   color: var(--danger); }
+.badge-cancelled  { background: rgba(120,120,120,0.1); color: #666; }
+.badge-completed  { background: rgba(100,149,237,0.1); color: #6495ed; }
+.badge-client     { background: rgba(255,255,255,0.05); color: #777; }
 .badge-admin     { background: var(--primary-dim);     color: var(--primary); }
 
 /* ── Action buttons ── */

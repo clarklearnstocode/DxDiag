@@ -54,11 +54,27 @@
                 <div class="detail-row"><span class="detail-label">Location</span><span class="detail-value"><?php echo htmlspecialchars($booking['Property_location']); ?></span></div>
                 <div class="detail-row">
                     <span class="detail-label">Check-In</span>
-                    <span class="detail-value"><?php $ci=$booking['Check_In']; echo ($ci&&$ci!=='0000-00-00')?date('M d, Y',strtotime($ci)):'<span style="color:var(--danger)">Not set</span>'; ?></span>
+                    <span class="detail-value">
+                        <?php
+                            $ci = $booking['Check_In'];
+                            if ($ci && $ci !== '0000-00-00') {
+                                echo date('M d, Y', strtotime($ci));
+                                if (!empty($booking['Check_In_Time'])) echo ' · ' . date('g:i A', strtotime($booking['Check_In_Time']));
+                            } else { echo '<span style="color:var(--danger)">Not set</span>'; }
+                        ?>
+                    </span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Check-Out</span>
-                    <span class="detail-value"><?php $co=$booking['Check_Out']; echo ($co&&$co!=='0000-00-00')?date('M d, Y',strtotime($co)):'<span style="color:var(--danger)">Not set</span>'; ?></span>
+                    <span class="detail-value">
+                        <?php
+                            $co = $booking['Check_Out'];
+                            if ($co && $co !== '0000-00-00') {
+                                echo date('M d, Y', strtotime($co));
+                                if (!empty($booking['Check_Out_Time'])) echo ' · ' . date('g:i A', strtotime($booking['Check_Out_Time']));
+                            } else { echo '<span style="color:var(--danger)">Not set</span>'; }
+                        ?>
+                    </span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Nights</span>
@@ -113,6 +129,11 @@
                     <a href="index.php?action=update_booking_status&id=<?php echo $booking['Booking_Id']; ?>&status=Rejected&from=manage"
                        class="action-btn-full action-reject"
                        onclick="return confirm('Cancel this confirmed booking?');">✗ Cancel Booking</a>
+
+                <?php elseif ($cur === 'completed'): ?>
+                    <div style="background:rgba(100,149,237,0.07);color:#6495ed;text-align:center;padding:14px;border-radius:10px;font-weight:700;">
+                        ✔ Stay completed — property auto-released.
+                    </div>
 
                 <?php else: ?>
                     <div style="background:rgba(231,76,60,0.07);color:var(--danger);text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-bottom:12px;">

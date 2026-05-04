@@ -108,7 +108,9 @@
             <?php if (!empty($properties)): ?>
                 <?php foreach ($properties as $property): ?>
                     <div style="background:#111; border-radius:20px; padding:20px; border:1px solid #222;">
-                        <img src="assets/img/<?php echo htmlspecialchars($property['image_path']); ?>" style="width:100%; height:200px; object-fit:cover; border-radius:15px; margin-bottom:15px;">
+                        <img src="assets/img/<?php echo htmlspecialchars($property['image_path']); ?>"
+                             onerror="this.onerror=null;this.src='assets/img/villa1.png';"
+                             style="width:100%; height:200px; object-fit:cover; border-radius:15px; margin-bottom:15px;">
                         
                         <h4 style="color:#c9a07a; margin-bottom:5px;"><?php echo htmlspecialchars($property['Property_Name']); ?></h4>
                         <p style="color:#888; font-size:0.9rem;">📍 <?php echo htmlspecialchars($property['Property_location']); ?></p>

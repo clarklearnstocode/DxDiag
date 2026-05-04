@@ -157,21 +157,23 @@ class AuthController {
 
         $user_id = $_SESSION['user_id'];
 
-        $query = "SELECT 
-                    b.Booking_Id, 
+        $query = "SELECT
+                    b.Booking_Id,
                     b.Booking_Date,
                     b.Check_In,
+                    b.Check_In_Time,
                     b.Check_Out,
-                    b.Reservation_Status, 
-                    p.Property_Name, 
+                    b.Check_Out_Time,
+                    b.Reservation_Status,
+                    p.Property_Name,
                     p.Property_location,
                     p.image_path,
                     pay.Amount,
                     pay.Payment_Method
-                  FROM Booking b 
-                  JOIN Property p ON b.Property_Id = p.Property_Id 
+                  FROM Booking b
+                  JOIN Property p ON b.Property_Id = p.Property_Id
                   LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
-                  WHERE b.User_Id = ? 
+                  WHERE b.User_Id = ?
                   ORDER BY b.Booking_Id DESC";
                   
         $stmt = $this->db->prepare($query);
@@ -204,33 +206,107 @@ class AuthController {
 
     // Handle Login Logic - UPDATED TO ALIGN WITH YOUR NEW LOGIN PAGE
     public function handleLogin() {
-        ob_start(); 
-        
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Updated key to match login.php: login_identity
-            $identity = $_POST['login_identity'] ?? '';
-            $password = $_POST['password'] ?? '';
+        ob_start();
 
-            // This calls the login method in Users.php (ensure it accepts 1 argument)
-            $loggedUser = $this->user->login($identity);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            ob_end_clean();
+            header("Location: index.php?action=login");
+            exit();
+        }
 
-            if ($loggedUser && password_verify($password, $loggedUser['Password'])) {
-                $_SESSION['user_id']    = $loggedUser['User_Id'];
-                $_SESSION['user_name']  = $loggedUser['Name'];
-                $_SESSION['user_email'] = $loggedUser['Email'];
-                $_SESSION['user_phone'] = $loggedUser['Phone'] ?? '';
-                $_SESSION['user_image'] = $loggedUser['profile_image'] ?? '';
-                
-                ob_end_clean();
-                // Redirect to your user dashboard
-                header("Location: index.php?action=dashboard");
-                exit(); 
+        $identity = $_POST['login_identity'] ?? '';
+        $password = $_POST['password']       ?? '';
+
+        $loggedUser = $this->user->login($identity);
+
+        if ($loggedUser && password_verify($password, $loggedUser['Password'])) {
+            ob_end_clean();
+
+            // ── 2FA: generate OTP and send email ──
+            require_once __DIR__ . '/../../app/services/OTPService.php';
+            require_once __DIR__ . '/../../app/services/Mailer.php';
+
+            $otp = OTPService::generate('user');
+
+            // Store user data in session temporarily (not fully logged in yet)
+            $_SESSION['2fa_pending_user'] = [
+                'id'    => $loggedUser['User_Id'],
+                'name'  => $loggedUser['Name'],
+                'email' => $loggedUser['Email'],
+                'phone' => $loggedUser['Phone']          ?? '',
+                'image' => $loggedUser['profile_image']  ?? '',
+            ];
+
+            $result = Mailer::sendOTP($loggedUser['Email'], $loggedUser['Name'], $otp, 'User');
+
+            if ($result === true) {
+                header("Location: index.php?action=verify_otp&role=user");
             } else {
-                ob_end_clean();
-                header("Location: index.php?action=login&error=invalid");
+                // Email failed — log the error and bypass 2FA so login still works
+                error_log("EstateBook Mailer error (user): $result");
+                header("Location: index.php?action=verify_otp&role=user&mail_error=1");
+            }
+            exit();
+        } else {
+            ob_end_clean();
+            header("Location: index.php?action=login&error=invalid");
+            exit();
+        }
+    }
+
+    // Show OTP verification page
+    public function showVerifyOTP() {
+        require_once __DIR__ . '/../../app/services/OTPService.php';
+        $role       = $_GET['role']       ?? 'user';
+        $mailError  = $_GET['mail_error'] ?? '0';
+        $secondsLeft = OTPService::secondsLeft();
+        require_once __DIR__ . '/../views/verify_otp.php';
+    }
+
+    // Handle OTP form submission for user
+    public function handleVerifyOTP() {
+        require_once __DIR__ . '/../../app/services/OTPService.php';
+
+        $otp  = trim($_POST['otp_code'] ?? '');
+        $role = trim($_POST['role']     ?? 'user');
+
+        if (!OTPService::verify($otp, $role)) {
+            header("Location: index.php?action=verify_otp&role={$role}&error=invalid");
+            exit();
+        }
+
+        if ($role === 'user') {
+            $pending = $_SESSION['2fa_pending_user'] ?? null;
+            if (!$pending) {
+                header("Location: index.php?action=login");
                 exit();
             }
+            // OTP passed — fully log user in
+            $_SESSION['user_id']    = $pending['id'];
+            $_SESSION['user_name']  = $pending['name'];
+            $_SESSION['user_email'] = $pending['email'];
+            $_SESSION['user_phone'] = $pending['phone'];
+            $_SESSION['user_image'] = $pending['image'];
+            unset($_SESSION['2fa_pending_user']);
+            header("Location: index.php?action=dashboard");
+            exit();
+
+        } elseif ($role === 'admin') {
+            $pending = $_SESSION['2fa_pending_admin'] ?? null;
+            if (!$pending) {
+                header("Location: index.php?action=admin_login");
+                exit();
+            }
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_id']        = $pending['id'];
+            $_SESSION['admin_name']      = $pending['name'];
+            unset($_SESSION['2fa_pending_admin']);
+            header("Location: index.php?action=admin_dashboard");
+            exit();
         }
+
+        header("Location: index.php?action=login");
+        exit();
     }
 
     // Handle Logout

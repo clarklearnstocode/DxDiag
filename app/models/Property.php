@@ -43,10 +43,18 @@ class Property {
     }
 
     public function getOne($id) {
-    $query = "SELECT * FROM " . $this->table_name . " WHERE Property_Id = ? LIMIT 1";
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute([$id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+        $query = "SELECT * FROM " . $this->table_name . " WHERE Property_Id = ? LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Fetch only 3 featured properties for the landing page (not all)
+    public function readFeatured($limit = 3) {
+        $query = "SELECT * FROM " . $this->table_name . " ORDER BY Property_Id ASC LIMIT " . intval($limit);
+        $stmt  = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
 
 }

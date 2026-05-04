@@ -32,11 +32,40 @@ class AdminController {
         $admin_user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($admin_user) {
-            $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_id']        = $admin_user['Admin_Id'];
-            $_SESSION['admin_name']      = $admin_user['Admin_Name'];
-            header("Location: index.php?action=admin_dashboard");
+            // ── 2FA: generate OTP and send to admin email ──
+            require_once __DIR__ . '/../../app/services/OTPService.php';
+            require_once __DIR__ . '/../../app/services/Mailer.php';
+
+            $otp = OTPService::generate('admin');
+
+            // Store admin identity temporarily
+            $_SESSION['2fa_pending_admin'] = [
+                'id'   => $admin_user['Admin_Id'],
+                'name' => $admin_user['Admin_Name'],
+            ];
+
+            $adminEmail = $admin_user['Email'] ?? '';
+            $adminName  = $admin_user['Admin_Name'];
+
+            if (empty($adminEmail)) {
+                // No email configured — skip 2FA, log in directly
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_id']        = $admin_user['Admin_Id'];
+                $_SESSION['admin_name']      = $admin_user['Admin_Name'];
+                header("Location: index.php?action=admin_dashboard");
+                exit();
+            }
+
+            $result = Mailer::sendOTP($adminEmail, $adminName, $otp, 'Admin');
+
+            if ($result === true) {
+                header("Location: index.php?action=verify_otp&role=admin");
+            } else {
+                error_log("EstateBook Mailer error (admin): $result");
+                header("Location: index.php?action=verify_otp&role=admin&mail_error=1");
+            }
             exit();
+
         } else {
             header("Location: index.php?action=admin_login&error=invalid");
             exit();
