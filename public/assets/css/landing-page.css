@@ -1,0 +1,64 @@
+/* Landing page extracted styles */
+.logo-clickable {
+    cursor: pointer;
+}
+
+.search-divider {
+    width: 1px;
+    height: 30px;
+    background: #eee;
+}
+
+.slide-image {
+    transition: opacity 0.6s ease;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.featured-card {
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.featured-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.featured-card-title {
+    margin-bottom: 5px;
+}
+
+.featured-card-location {
+    font-size: 0.9rem;
+}
+
+.featured-card-rate {
+    font-weight: 800;
+    margin-top: 10px;
+}
+
+.featured-empty {
+    text-align: center;
+    grid-column: 1/-1;
+}
+
+.featured-cta-wrap {
+    text-align: center;
+}
+
+.featured-cta-link {
+    text-decoration: none;
+    border: 1px solid #c9a07a;
+    padding: 12px 30px;
+    border-radius: 30px;
+    display: inline-block;
+}
+
+.footer-logo {
+    margin-bottom: 20px;
+}

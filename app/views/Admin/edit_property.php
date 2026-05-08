@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>EstateBook Admin | Edit Property</title>
     <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/admin-property-forms.css">
 </head>
 <body>
 <?php $activePage = 'dashboard'; require __DIR__ . '/_sidebar.php'; ?>
@@ -18,7 +19,7 @@
     <div class="page-header">
         <div class="page-header-left">
             <h1>Edit Property</h1>
-            <p>Updating: <strong style="color:var(--primary);"><?php echo htmlspecialchars($property['Property_Name']); ?></strong></p>
+            <p>Updating: <strong class="u-editing-name"><?php echo htmlspecialchars($property['Property_Name']); ?></strong></p>
         </div>
     </div>
 
@@ -87,11 +88,11 @@
             <span class="form-section-title">Property Image</span>
 
             <?php if (!empty($property['image_path'])): ?>
-            <div style="margin-bottom:14px;">
+            <div class="u-preview-wrap">
                 <img src="assets/img/<?php echo htmlspecialchars($property['image_path']); ?>"
                      id="currentImgEl" alt="Current"
-                     style="width:100%;max-height:220px;object-fit:cover;border-radius:11px;border:1px solid var(--border);">
-                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:7px;">Current image — upload a new one below to replace it</p>
+                     class="u-current-image">
+                <p class="u-current-image-note">Current image — upload a new one below to replace it</p>
             </div>
             <?php endif; ?>
 
@@ -102,9 +103,9 @@
                     <div class="upload-text">Drop new image here or <strong>click to browse</strong></div>
                     <div class="upload-hint">Leave blank to keep current image</div>
                 </div>
-                <div id="new-preview-wrap" style="display:none;margin-top:10px;">
-                    <img id="new-img-preview" src="" alt="" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
-                    <p style="font-size:0.73rem;color:var(--success);margin-top:6px;">✓ New image ready — will replace current on save</p>
+                <div id="new-preview-wrap" class="u-new-preview-wrap">
+                    <img id="new-img-preview" src="" alt="" class="u-new-preview-img">
+                    <p class="u-new-preview-note">✓ New image ready — will replace current on save</p>
                 </div>
             </div>
 
@@ -115,8 +116,8 @@
                 <textarea name="description" required><?php echo htmlspecialchars($property['Property_Description'] ?? ''); ?></textarea>
             </div>
 
-            <div style="display:flex;gap:12px;margin-top:14px;">
-                <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">✦ Save Changes</button>
+            <div class="u-actions-row">
+                <button type="submit" class="btn btn-primary btn-lg u-flex-grow">✦ Save Changes</button>
                 <a href="index.php?action=admin_dashboard" class="btn btn-ghost btn-lg">Cancel</a>
             </div>
         </div>
@@ -124,20 +125,6 @@
     </form>
 </main>
 
-<script>
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('new-img-preview').src = e.target.result;
-            document.getElementById('new-preview-wrap').style.display = 'block';
-            document.getElementById('uploadZone').classList.add('has-file');
-            var cur = document.getElementById('currentImgEl');
-            if (cur) cur.src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-</script>
+<script src="assets/js/admin-property-form.js"></script>
 </body>
 </html>

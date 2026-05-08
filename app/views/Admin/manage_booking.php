@@ -4,15 +4,7 @@
     <meta charset="UTF-8">
     <title>EstateBook Admin | Booking #<?php echo $booking['Booking_Id']; ?></title>
     <link rel="stylesheet" href="assets/css/admin.css">
-    <style>
-        .booking-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
-        .action-btn-full { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer; text-align: center; text-decoration: none; transition: 0.25s; margin-bottom: 10px; font-family: 'Inter', sans-serif; }
-        .action-approve { background: var(--success); color: #000; }
-        .action-approve:hover { opacity: 0.85; transform: translateY(-2px); }
-        .action-reject  { background: rgba(231,76,60,0.12); color: var(--danger); border: 1px solid var(--danger); }
-        .action-reject:hover  { background: var(--danger); color: white; }
-        .prop-hero { width:100%; height:190px; object-fit:cover; border-radius:12px; margin-bottom:18px; border:1px solid var(--border); display:block; }
-    </style>
+    <link rel="stylesheet" href="assets/css/manage-booking.css">
 </head>
 <body>
 <?php $activePage = 'reservations'; require __DIR__ . '/_sidebar.php'; ?>
@@ -60,7 +52,7 @@
                             if ($ci && $ci !== '0000-00-00') {
                                 echo date('M d, Y', strtotime($ci));
                                 if (!empty($booking['Check_In_Time'])) echo ' · ' . date('g:i A', strtotime($booking['Check_In_Time']));
-                            } else { echo '<span style="color:var(--danger)">Not set</span>'; }
+                            } else { echo '<span class="u-inline-danger">Not set</span>'; }
                         ?>
                     </span>
                 </div>
@@ -72,7 +64,7 @@
                             if ($co && $co !== '0000-00-00') {
                                 echo date('M d, Y', strtotime($co));
                                 if (!empty($booking['Check_Out_Time'])) echo ' · ' . date('g:i A', strtotime($booking['Check_Out_Time']));
-                            } else { echo '<span style="color:var(--danger)">Not set</span>'; }
+                            } else { echo '<span class="u-inline-danger">Not set</span>'; }
                         ?>
                     </span>
                 </div>
@@ -96,7 +88,7 @@
             <div class="detail-card">
                 <span class="detail-card-title">Payment Information</span>
                 <div class="detail-row"><span class="detail-label">Method</span><span class="detail-value"><?php echo htmlspecialchars($booking['Payment_Method']??'N/A'); ?></span></div>
-                <div class="detail-row"><span class="detail-label">Amount Paid</span><span class="detail-value" style="color:var(--primary);">₱<?php echo number_format($booking['Amount']??0); ?></span></div>
+                <div class="detail-row"><span class="detail-label">Amount Paid</span><span class="detail-value u-amount-primary">₱<?php echo number_format($booking['Amount']??0); ?></span></div>
                 <div class="detail-row"><span class="detail-label">Payment Status</span><span class="detail-value"><?php echo htmlspecialchars($booking['Payment_Status']??'N/A'); ?></span></div>
             </div>
         </div>
@@ -123,7 +115,7 @@
                        onclick="return confirm('Reject this booking?');">✗ Reject Booking</a>
 
                 <?php elseif ($cur === 'confirmed'): ?>
-                    <div style="background:rgba(46,204,113,0.07);color:var(--success);text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-bottom:12px;">
+                    <div class="u-state-box u-state-confirmed">
                         ✓ This booking has been confirmed.
                     </div>
                     <a href="index.php?action=update_booking_status&id=<?php echo $booking['Booking_Id']; ?>&status=Rejected&from=manage"
@@ -131,12 +123,12 @@
                        onclick="return confirm('Cancel this confirmed booking?');">✗ Cancel Booking</a>
 
                 <?php elseif ($cur === 'completed'): ?>
-                    <div style="background:rgba(100,149,237,0.07);color:#6495ed;text-align:center;padding:14px;border-radius:10px;font-weight:700;">
+                    <div class="u-state-box u-state-completed">
                         ✔ Stay completed — property auto-released.
                     </div>
 
                 <?php else: ?>
-                    <div style="background:rgba(231,76,60,0.07);color:var(--danger);text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-bottom:12px;">
+                    <div class="u-state-box u-state-rejected">
                         This booking has been rejected/cancelled.
                     </div>
                     <a href="index.php?action=approve_booking&id=<?php echo $booking['Booking_Id']; ?>"

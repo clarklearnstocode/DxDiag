@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>EstateBook Admin | Add Property</title>
     <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/admin-property-forms.css">
 </head>
 <body>
 <?php $activePage = 'add_property'; require __DIR__ . '/_sidebar.php'; ?>
@@ -78,10 +79,10 @@
                     <div class="upload-text">Drop image here or <strong>click to browse</strong></div>
                     <div class="upload-hint">JPG / PNG / WEBP — Recommended 1200×800px, max 5MB</div>
                 </div>
-                <div id="preview-wrap" style="display:none; margin-top:12px;">
+                <div id="preview-wrap" class="u-add-preview-wrap">
                     <img id="img-preview" src="" alt="Preview"
-                         style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
-                    <p style="font-size:0.75rem;color:var(--success);margin-top:7px;">✓ Image selected</p>
+                         class="u-add-preview-img">
+                    <p class="u-add-preview-note">✓ Image selected</p>
                 </div>
             </div>
 
@@ -92,25 +93,13 @@
                 <textarea name="description" placeholder="Describe the property's style, amenities, atmosphere..." required></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full" style="margin-top:12px;">✦ Publish Property</button>
+            <button type="submit" class="btn btn-primary btn-full u-publish-btn">✦ Publish Property</button>
         </div>
 
     </form>
 
 </main>
 
-<script>
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('img-preview').src = e.target.result;
-            document.getElementById('preview-wrap').style.display = 'block';
-            document.getElementById('uploadZone').classList.add('has-file');
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-</script>
+<script src="assets/js/admin-property-form.js"></script>
 </body>
 </html>

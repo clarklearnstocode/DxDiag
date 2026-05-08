@@ -90,7 +90,7 @@
                     <td><?php echo (!empty($row['Has_pool']) && $row['Has_pool'] != '0') ? '🏊 Yes' : '—'; ?></td>
                     <td><span class="badge <?php echo $occupied ? 'badge-occupied' : 'badge-available'; ?>"><?php echo htmlspecialchars($row['Status'] ?? 'Available'); ?></span></td>
                     <td>
-                        <div style="display:flex;gap:8px;">
+                        <div class="u-flex-gap-8">
                             <a href="index.php?action=edit_property&id=<?php echo $row['Property_Id']; ?>" class="btn btn-ghost-primary">
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 Edit
@@ -106,7 +106,7 @@
                 </tr>
                 <?php endforeach; ?>
             <?php else: ?>
-                <tr class="empty-row"><td colspan="7">No properties yet. <a href="index.php?action=add_property" style="color:var(--primary);">Add your first →</a></td></tr>
+                <tr class="empty-row"><td colspan="7">No properties yet. <a href="index.php?action=add_property" class="u-inline-primary-link">Add your first →</a></td></tr>
             <?php endif; ?>
         </tbody>
     </table>

@@ -1,0 +1,68 @@
+/* Dashboard page extracted inline styles */
+.result-filter-section {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #1a1a1a;
+}
+
+.result-count {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.result-suffix {
+    color: #444;
+    font-size: 0.8rem;
+}
+
+.search-clear-hidden {
+    display: none;
+}
+
+.dropdown-profile-image {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+}
+
+.dropdown-profile-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.dropdown-profile-email {
+    font-size: 0.72rem;
+    color: #555;
+}
+
+.dropdown-divider {
+    border: 0;
+    border-top: 1px solid #1e1e1e;
+    margin: 6px 0;
+}
+
+.dropdown-logout-link {
+    color: #ff4c4c;
+}
+
+.no-results-text {
+    display: none;
+    font-size: 1rem;
+    color: #555;
+    font-weight: 400;
+}
+
+.page-subtext {
+    color: #555;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+.empty-properties-text {
+    color: #555;
+    grid-column: 1/-1;
+    padding: 40px 0;
+}

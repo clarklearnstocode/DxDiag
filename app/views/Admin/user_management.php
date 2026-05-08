@@ -54,7 +54,7 @@
                         </div>
                     </td>
                     <td><?php echo htmlspecialchars($u['Email']); ?></td>
-                    <td style="color:var(--text-muted);"><?php echo htmlspecialchars($u['Phone'] ?? '—'); ?></td>
+                    <td class="u-text-muted"><?php echo htmlspecialchars($u['Phone'] ?? '—'); ?></td>
                     <td><span class="badge badge-client">Client</span></td>
                     <td>
                         <a href="index.php?action=delete_user&id=<?php echo $u['User_Id']; ?>"

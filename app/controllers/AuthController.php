@@ -1,56 +1,44 @@
 <?php
-// Using absolute paths to ensure the files are always found
 require_once __DIR__ . '/../../config/Database.php';
-require_once __DIR__ . '/../models/Users.php';
-require_once __DIR__ . '/../models/Property.php'; // Needed for dashboard data
+require_once __DIR__ . '/../models/Users.php';   // Class is named "User" (singular)
 
 class AuthController {
     private $db;
     private $user;
 
     public function __construct() {
-        $database = new Database();
-        $this->db = $database->getConnection();
-        // Updated to match your model filename 'Users.php'
-        $this->user = new User($this->db);
+        $database   = new Database();
+        $this->db   = $database->getConnection();
+        $this->user = new User($this->db);   // "User" not "Users"
     }
+
+    // ── Login pages ──────────────────────────────────────────
 
     public function showLogin() {
         require_once __DIR__ . '/../views/login.php';
     }
 
     public function showSignup() {
-        require_once __DIR__ . '/../views/register.php';
+        require_once __DIR__ . '/../views/register.php';   // file is register.php
     }
 
-    /**
-     * Display the User Dashboard
-     * Pointing to the new views/User/ folder structure
-     */
+    // ── Dashboard ────────────────────────────────────────────
+
     public function showDashboard() {
-        // Security check: Redirect to login if session isn't set
         if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login&error=unauthorized");
-            exit();
+            header("Location: index.php?action=login"); exit();
         }
-
-        // Fetch properties to display on the dashboard grid
-        $propertyModel = new Property($this->db);
-        $stmt = $propertyModel->readAll();
+        $stmt       = $this->db->query("SELECT * FROM Property ORDER BY Property_Id DESC");
         $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Path updated to your new subfolder: app/views/User/dashboard.php
         require_once __DIR__ . '/../views/User/dashboard.php';
     }
 
-    // Handle the Profile Page — load fresh data from DB
+    // ── Profile ──────────────────────────────────────────────
+
     public function showProfile() {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login");
-            exit();
+            header("Location: index.php?action=login"); exit();
         }
-
-        // Refresh session with latest DB data
         $stmt = $this->db->prepare("SELECT * FROM User WHERE User_Id = ? LIMIT 1");
         $stmt->execute([$_SESSION['user_id']]);
         $userData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -60,228 +48,279 @@ class AuthController {
             $_SESSION['user_phone'] = $userData['Phone'] ?? '';
             $_SESSION['user_image'] = $userData['profile_image'] ?? '';
         }
-
         require_once __DIR__ . '/../views/User/profile.php';
     }
 
-    // Handle Profile Update (name, email, phone, password, photo)
     public function updateProfile() {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login");
-            exit();
+            header("Location: index.php?action=login"); exit();
         }
 
-        $userId   = $_SESSION['user_id'];
-        $name     = trim($_POST['full_name']   ?? '');
-        $email    = trim($_POST['email']       ?? '');
-        $phone    = trim($_POST['phone']       ?? '');
-        $curPw    = $_POST['current_password'] ?? '';
-        $newPw    = $_POST['new_password']     ?? '';
-        $conPw    = $_POST['confirm_password'] ?? '';
+        $userId = $_SESSION['user_id'];
+        $name   = trim($_POST['full_name'] ?? '');
+        $email  = trim($_POST['email']     ?? '');
+        $phone  = trim($_POST['phone']     ?? '');
+        $curPw  = $_POST['current_password'] ?? '';
+        $newPw  = $_POST['new_password']     ?? '';
+        $conPw  = $_POST['confirm_password'] ?? '';
 
-        // ── 1. Check email not taken by another user ──
         $stmt = $this->db->prepare("SELECT User_Id FROM User WHERE Email = ? AND User_Id != ?");
         $stmt->execute([$email, $userId]);
         if ($stmt->fetch()) {
-            header("Location: index.php?action=profile&error=email_taken");
-            exit();
+            header("Location: index.php?action=profile&error=email_taken"); exit();
         }
 
-        // ── 2. Handle profile photo upload ──
         $newImage = null;
         if (!empty($_FILES['profile_photo']['name']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
             $allowed = ['image/jpeg','image/png','image/webp'];
             $mime    = mime_content_type($_FILES['profile_photo']['tmp_name']);
             if (!in_array($mime, $allowed) || $_FILES['profile_photo']['size'] > 2 * 1024 * 1024) {
-                header("Location: index.php?action=profile&error=upload_failed");
-                exit();
+                header("Location: index.php?action=profile&error=upload_failed"); exit();
             }
             $ext      = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
             $safeName = 'user_' . $userId . '_' . time() . '.' . strtolower($ext);
-            // Use UPLOAD_PATH constant (defined in index.php → public/assets/img/uploads/)
             if (!is_dir(UPLOAD_PATH)) mkdir(UPLOAD_PATH, 0755, true);
             if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], UPLOAD_PATH . $safeName)) {
                 $newImage = $safeName;
             }
         }
 
-        // ── 3. Handle password change ──
         $newHashedPw = null;
         if (!empty($newPw)) {
-            // Verify current password
             $stmt = $this->db->prepare("SELECT Password FROM User WHERE User_Id = ?");
             $stmt->execute([$userId]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$row || !password_verify($curPw, $row['Password'])) {
-                header("Location: index.php?action=profile&error=wrong_password");
-                exit();
+                header("Location: index.php?action=profile&error=wrong_password"); exit();
             }
             if ($newPw === $conPw && strlen($newPw) >= 6) {
                 $newHashedPw = password_hash($newPw, PASSWORD_DEFAULT);
             }
         }
 
-        // ── 4. Build UPDATE query dynamically ──
         $fields = "Name = ?, Email = ?, Phone = ?";
         $params = [$name, $email, $phone];
-
-        if ($newHashedPw) {
-            $fields .= ", Password = ?";
-            $params[] = $newHashedPw;
-        }
-        if ($newImage) {
-            $fields .= ", profile_image = ?";
-            $params[] = $newImage;
-        }
+        if ($newHashedPw)  { $fields .= ", Password = ?";      $params[] = $newHashedPw; }
+        if ($newImage)     { $fields .= ", profile_image = ?"; $params[] = $newImage; }
         $params[] = $userId;
 
-        $stmt = $this->db->prepare("UPDATE User SET {$fields} WHERE User_Id = ?");
-        $stmt->execute($params);
+        $this->db->prepare("UPDATE User SET {$fields} WHERE User_Id = ?")->execute($params);
 
-        // ── 5. Refresh session ──
         $_SESSION['user_name']  = $name;
         $_SESSION['user_email'] = $email;
         $_SESSION['user_phone'] = $phone;
         if ($newImage) $_SESSION['user_image'] = $newImage;
 
-        header("Location: index.php?action=profile&success=1");
-        exit();
+        header("Location: index.php?action=profile&success=1"); exit();
     }
 
-    // Handle the My Bookings Page
+    // ── My Bookings ──────────────────────────────────────────
+
     public function showMyBookings() {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login");
-            exit();
+            header("Location: index.php?action=login"); exit();
         }
-
-        $user_id = $_SESSION['user_id'];
-
         $query = "SELECT
-                    b.Booking_Id,
-                    b.Booking_Date,
-                    b.Check_In,
-                    b.Check_In_Time,
-                    b.Check_Out,
-                    b.Check_Out_Time,
-                    b.Reservation_Status,
-                    p.Property_Name,
-                    p.Property_location,
-                    p.image_path,
-                    pay.Amount,
-                    pay.Payment_Method
+                    b.Booking_Id, b.Booking_Date, b.Check_In, b.Check_In_Time,
+                    b.Check_Out, b.Check_Out_Time, b.Reservation_Status,
+                    p.Property_Name, p.Property_location, p.image_path,
+                    pay.Amount, pay.Payment_Method
                   FROM Booking b
                   JOIN Property p ON b.Property_Id = p.Property_Id
                   LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
                   WHERE b.User_Id = ?
                   ORDER BY b.Booking_Id DESC";
-                  
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$user_id]);
+        $stmt->execute([$_SESSION['user_id']]);
         $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         require_once __DIR__ . '/../views/User/my_bookings.php';
     }
 
-    // Handle Signup Logic
-    public function handleSignup() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user = new User($this->db);
-            
-            $user->Name     = $_POST['full_name'] ?? ''; 
-            $user->Phone    = $_POST['phone'] ?? ''; 
-            $user->Email    = $_POST['email'] ?? ''; 
-            $user->Username = $_POST['username'] ?? ''; 
-            $user->Password = password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT);
+    // ── Signup / Register ────────────────────────────────────
 
-            if ($user->register()) {
-                header("Location: index.php?action=login&success=registered");
-                exit();
-            } else {
-                header("Location: index.php?action=register&error=failed");
-                exit();
-            }
+    public function handleSignup() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=signup"); exit();
         }
+        $name     = trim($_POST['name'] ?? $_POST['full_name'] ?? '');
+        $username = trim($_POST['username'] ?? '');
+        $email    = trim($_POST['email']    ?? '');
+        $phone    = trim($_POST['phone']    ?? '');
+        $password = $_POST['password']      ?? '';
+
+        if ($name === '' || $username === '' || $email === '' || $password === '') {
+            header("Location: index.php?action=signup&error=missing_fields"); exit();
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            header("Location: index.php?action=signup&error=invalid_email"); exit();
+        }
+        if (strlen($password) < 6) {
+            header("Location: index.php?action=signup&error=weak_password"); exit();
+        }
+
+        $check = $this->db->prepare("SELECT User_Id FROM User WHERE Email = ? OR Username = ?");
+        $check->execute([$email, $username]);
+        if ($check->fetch()) {
+            header("Location: index.php?action=signup&error=taken"); exit();
+        }
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $this->db->prepare(
+            "INSERT INTO User (Name, Username, Email, Phone, Password) VALUES (?,?,?,?,?)"
+        )->execute([$name, $username, $email, $phone, $hash]);
+
+        header("Location: index.php?action=login&registered=1"); exit();
     }
 
-    // Handle Login Logic - UPDATED TO ALIGN WITH YOUR NEW LOGIN PAGE
+    // ── LOGIN with TOTP ──────────────────────────────────────
+
     public function handleLogin() {
         ob_start();
-
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             ob_end_clean();
-            header("Location: index.php?action=login");
-            exit();
+            header("Location: index.php?action=login"); exit();
         }
 
         $identity = $_POST['login_identity'] ?? '';
         $password = $_POST['password']       ?? '';
-
         $loggedUser = $this->user->login($identity);
 
         if ($loggedUser && password_verify($password, $loggedUser['Password'])) {
             ob_end_clean();
 
-            // ── 2FA: generate OTP and send email ──
-            require_once __DIR__ . '/../../app/services/OTPService.php';
-            require_once __DIR__ . '/../../app/services/Mailer.php';
-
-            $otp = OTPService::generate('user');
-
-            // Store user data in session temporarily (not fully logged in yet)
+            // Store pending identity — not fully logged in yet
             $_SESSION['2fa_pending_user'] = [
-                'id'    => $loggedUser['User_Id'],
-                'name'  => $loggedUser['Name'],
-                'email' => $loggedUser['Email'],
-                'phone' => $loggedUser['Phone']          ?? '',
-                'image' => $loggedUser['profile_image']  ?? '',
+                'id'       => $loggedUser['User_Id'],
+                'name'     => $loggedUser['Name'],
+                'email'    => $loggedUser['Email'],
+                'phone'    => $loggedUser['Phone']         ?? '',
+                'image'    => $loggedUser['profile_image'] ?? '',
+                'totp_enabled' => (int)($loggedUser['totp_enabled'] ?? 0),
+                'totp_secret'  => $loggedUser['totp_secret'] ?? '',
             ];
 
-            $result = Mailer::sendOTP($loggedUser['Email'], $loggedUser['Name'], $otp, 'User');
-
-            if ($result === true) {
-                header("Location: index.php?action=verify_otp&role=user");
+            if (!empty($loggedUser['totp_enabled']) && !empty($loggedUser['totp_secret'])) {
+                // 2FA set up → go to verify page
+                header("Location: index.php?action=verify_totp&role=user");
             } else {
-                // Email failed — log the error and bypass 2FA so login still works
-                error_log("EstateBook Mailer error (user): $result");
-                header("Location: index.php?action=verify_otp&role=user&mail_error=1");
+                // 2FA not set up yet → go to setup page
+                header("Location: index.php?action=setup_totp&role=user");
             }
             exit();
         } else {
             ob_end_clean();
-            header("Location: index.php?action=login&error=invalid");
-            exit();
+            header("Location: index.php?action=login&error=invalid"); exit();
         }
     }
 
-    // Show OTP verification page
-    public function showVerifyOTP() {
-        require_once __DIR__ . '/../../app/services/OTPService.php';
-        $role       = $_GET['role']       ?? 'user';
-        $mailError  = $_GET['mail_error'] ?? '0';
-        $secondsLeft = OTPService::secondsLeft();
-        require_once __DIR__ . '/../views/verify_otp.php';
-    }
+    // ── TOTP Setup page ──────────────────────────────────────
 
-    // Handle OTP form submission for user
-    public function handleVerifyOTP() {
-        require_once __DIR__ . '/../../app/services/OTPService.php';
+    public function showSetupTOTP() {
+        require_once __DIR__ . '/../../app/services/TOTPService.php';
 
-        $otp  = trim($_POST['otp_code'] ?? '');
-        $role = trim($_POST['role']     ?? 'user');
+        $role = $_GET['role'] ?? 'user';
 
-        if (!OTPService::verify($otp, $role)) {
-            header("Location: index.php?action=verify_otp&role={$role}&error=invalid");
+        // Verify there's a pending login
+        $pendingKey = $role === 'admin' ? '2fa_pending_admin' : '2fa_pending_user';
+        if (empty($_SESSION[$pendingKey])) {
+            header("Location: index.php?action=" . ($role === 'admin' ? 'admin_login' : 'login'));
             exit();
         }
 
-        if ($role === 'user') {
-            $pending = $_SESSION['2fa_pending_user'] ?? null;
-            if (!$pending) {
-                header("Location: index.php?action=login");
-                exit();
-            }
-            // OTP passed — fully log user in
+        $pending = $_SESSION[$pendingKey];
+        $label   = $role === 'admin' ? ($pending['name'] . ' (Admin)') : $pending['email'];
+
+        // Generate a fresh secret for this setup session
+        if (empty($_SESSION['totp_setup_secret'])) {
+            $_SESSION['totp_setup_secret'] = TOTPService::generateSecret();
+        }
+        $secret     = $_SESSION['totp_setup_secret'];
+        $otpauthUri = TOTPService::getOtpauthUri($secret, $label);
+        // $qrUrl no longer needed — QR is rendered client-side by qrcode.js
+
+        require_once __DIR__ . '/../views/setup_totp.php';
+    }
+
+    // ── Confirm TOTP setup (saves secret to DB) ──────────────
+
+    public function confirmTOTPSetup() {
+        require_once __DIR__ . '/../../app/services/TOTPService.php';
+
+        $role      = $_POST['role']      ?? 'user';
+        $secret    = $_POST['secret']    ?? '';
+        $totpCode  = trim($_POST['totp_code'] ?? '');
+
+        $pendingKey = $role === 'admin' ? '2fa_pending_admin' : '2fa_pending_user';
+        if (empty($_SESSION[$pendingKey])) {
+            header("Location: index.php?action=" . ($role === 'admin' ? 'admin_login' : 'login'));
+            exit();
+        }
+
+        if (!TOTPService::verify($secret, $totpCode)) {
+            header("Location: index.php?action=setup_totp&role={$role}&error=invalid");
+            exit();
+        }
+
+        // Save secret to DB
+        $pending = $_SESSION[$pendingKey];
+        if ($role === 'admin') {
+            $this->db->prepare(
+                "UPDATE Admin SET totp_secret = ?, totp_enabled = 1 WHERE Admin_Id = ?"
+            )->execute([$secret, $pending['id']]);
+        } else {
+            $this->db->prepare(
+                "UPDATE User SET totp_secret = ?, totp_enabled = 1 WHERE User_Id = ?"
+            )->execute([$secret, $pending['id']]);
+        }
+
+        unset($_SESSION['totp_setup_secret']);
+
+        // Fully log in
+        $this->completeLogin($role, $pending);
+    }
+
+    // ── TOTP Verify page ─────────────────────────────────────
+
+    public function showVerifyTOTP() {
+        $role = $_GET['role'] ?? 'user';
+        require_once __DIR__ . '/../views/verify_totp.php';
+    }
+
+    public function handleVerifyTOTP() {
+        require_once __DIR__ . '/../../app/services/TOTPService.php';
+
+        $role     = $_POST['role']      ?? 'user';
+        $totpCode = trim($_POST['totp_code'] ?? '');
+
+        $pendingKey = $role === 'admin' ? '2fa_pending_admin' : '2fa_pending_user';
+        if (empty($_SESSION[$pendingKey])) {
+            header("Location: index.php?action=" . ($role === 'admin' ? 'admin_login' : 'login'));
+            exit();
+        }
+
+        $pending = $_SESSION[$pendingKey];
+        $secret  = $pending['totp_secret'] ?? '';
+
+        if (!TOTPService::verify($secret, $totpCode)) {
+            header("Location: index.php?action=verify_totp&role={$role}&error=invalid");
+            exit();
+        }
+
+        $this->completeLogin($role, $pending);
+    }
+
+    // ── Shared: finalize login after 2FA passes ───────────────
+
+    private function completeLogin(string $role, array $pending): void
+    {
+        if ($role === 'admin') {
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_id']        = $pending['id'];
+            $_SESSION['admin_name']      = $pending['name'];
+            unset($_SESSION['2fa_pending_admin']);
+            session_regenerate_id(true);
+            header("Location: index.php?action=admin_dashboard");
+        } else {
             $_SESSION['user_id']    = $pending['id'];
             $_SESSION['user_name']  = $pending['name'];
             $_SESSION['user_email'] = $pending['email'];
@@ -289,30 +328,14 @@ class AuthController {
             $_SESSION['user_image'] = $pending['image'];
             unset($_SESSION['2fa_pending_user']);
             header("Location: index.php?action=dashboard");
-            exit();
-
-        } elseif ($role === 'admin') {
-            $pending = $_SESSION['2fa_pending_admin'] ?? null;
-            if (!$pending) {
-                header("Location: index.php?action=admin_login");
-                exit();
-            }
-            $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_id']        = $pending['id'];
-            $_SESSION['admin_name']      = $pending['name'];
-            unset($_SESSION['2fa_pending_admin']);
-            header("Location: index.php?action=admin_dashboard");
-            exit();
         }
-
-        header("Location: index.php?action=login");
         exit();
     }
 
-    // Handle Logout
+    // ── Logout ───────────────────────────────────────────────
+
     public function logout() {
         session_destroy();
-        header("Location: index.php?action=landing");
-        exit();
+        header("Location: index.php?action=home"); exit();
     }
 }

@@ -5,6 +5,7 @@
     <title>EstateBook | Available Estates</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/dashboard.css?v=2.0">
+    <link rel="stylesheet" href="assets/css/dashboard-page.css">
 </head>
 <body>
 
@@ -64,10 +65,10 @@
         </div>
 
         <!-- Results Count -->
-        <div class="filter-section" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #1a1a1a;">
+        <div class="filter-section result-filter-section">
             <span class="filter-label">Showing</span>
-            <span id="resultCount" style="color: var(--primary); font-weight: 700; font-size: 1.1rem;">—</span>
-            <span style="color: #444; font-size: 0.8rem;"> properties</span>
+            <span id="resultCount" class="result-count">—</span>
+            <span class="result-suffix"> properties</span>
         </div>
     </aside>
 
@@ -78,7 +79,7 @@
             <div class="search-wrap">
                 <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" id="searchBar" class="search-bar" placeholder="Search by name or location...">
-                <button class="search-clear" id="clearSearch" onclick="clearSearch()" style="display:none;">✕</button>
+                <button class="search-clear search-clear-hidden" id="clearSearch" onclick="clearSearch()">✕</button>
             </div>
 
             <nav class="top-nav">
@@ -99,10 +100,10 @@
                     </button>
                     <div id="profileDropdown" class="dropdown-menu">
                         <div class="dropdown-header">
-                            <img src="<?php echo !empty($_SESSION['user_image']) ? 'assets/img/uploads/' . htmlspecialchars($_SESSION['user_image']) : 'assets/img/user.png'; ?>" alt="Profile" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);">
+                            <img src="<?php echo !empty($_SESSION['user_image']) ? 'assets/img/uploads/' . htmlspecialchars($_SESSION['user_image']) : 'assets/img/user.png'; ?>" alt="Profile" class="dropdown-profile-image">
                             <div>
-                                <div style="font-weight:700;font-size:0.85rem;"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
-                                <div style="font-size:0.72rem;color:#555;"><?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?></div>
+                                <div class="dropdown-profile-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
+                                <div class="dropdown-profile-email"><?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?></div>
                             </div>
                         </div>
                         <a href="index.php?action=profile">
@@ -113,8 +114,8 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             My Bookings
                         </a>
-                        <hr style="border:0; border-top:1px solid #1e1e1e; margin:6px 0;">
-                        <a href="index.php?action=logout" style="color:#ff4c4c;">
+                        <hr class="dropdown-divider">
+                        <a href="index.php?action=logout" class="dropdown-logout-link">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4c4c" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             Logout
                         </a>
@@ -124,8 +125,8 @@
         </div>
 
         <div class="page-heading">
-            <h2>Available Estates <span id="noResults" style="display:none; font-size:1rem; color:#555; font-weight:400;">— No properties match your filters</span></h2>
-            <p style="color:#555; font-size:0.875rem; margin-top:4px;">Luxury villas across Bacolod & Negros Occidental</p>
+            <h2>Available Estates <span id="noResults" class="no-results-text">— No properties match your filters</span></h2>
+            <p class="page-subtext">Luxury villas across Bacolod & Negros Occidental</p>
         </div>
 
         <div class="property-grid" id="propertyGrid">
@@ -180,104 +181,11 @@
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p style="color:#555; grid-column:1/-1; padding:40px 0;">No properties found in the database.</p>
+                <p class="empty-properties-text">No properties found in the database.</p>
             <?php endif; ?>
         </div>
 
     </main>
-
-<script>
-    // --- Dropdown ---
-    function toggleDropdown(event) {
-        event.stopPropagation();
-        document.getElementById("profileDropdown").classList.toggle("show");
-    }
-    window.onclick = function(e) {
-        var d = document.getElementById("profileDropdown");
-        if (d && d.classList.contains('show') && !e.target.closest('.user-profile-container')) {
-            d.classList.remove('show');
-        }
-    }
-
-    // --- Search ---
-    var searchBar = document.getElementById('searchBar');
-    var clearBtn  = document.getElementById('clearSearch');
-
-    searchBar.addEventListener('input', function() {
-        clearBtn.style.display = this.value ? 'flex' : 'none';
-        applyFilters();
-    });
-
-    function clearSearch() {
-        searchBar.value = '';
-        clearBtn.style.display = 'none';
-        applyFilters();
-    }
-
-    // --- Filters ---
-    document.querySelectorAll('input[name="availability"]').forEach(function(r) {
-        r.addEventListener('change', applyFilters);
-    });
-    document.getElementById('filter-pool').addEventListener('change', applyFilters);
-    document.getElementById('filterCapacity').addEventListener('input', applyFilters);
-    document.getElementById('filterBathrooms').addEventListener('input', applyFilters);
-    document.getElementById('filterSize').addEventListener('input', applyFilters);
-
-    function applyFilters() {
-        var query    = searchBar.value.trim().toLowerCase();
-        var avail    = document.querySelector('input[name="availability"]:checked').value;
-        var needPool = document.getElementById('filter-pool').checked;
-        var minCap   = parseInt(document.getElementById('filterCapacity').value)  || 0;
-        var minBath  = parseInt(document.getElementById('filterBathrooms').value) || 0;
-        var minSize  = parseInt(document.getElementById('filterSize').value)      || 0;
-        var minPrice = parseFloat(document.getElementById('priceMin').value) || 0;
-        var maxPrice = parseFloat(document.getElementById('priceMax').value) || Infinity;
-
-        var cards   = document.querySelectorAll('.property-card');
-        var visible = 0;
-
-        cards.forEach(function(card) {
-            var name   = card.dataset.name;
-            var loc    = card.dataset.location;
-            var status = card.dataset.status;
-            var pool   = card.dataset.pool === '1';
-            var bath   = parseInt(card.dataset.bathrooms);
-            var cap    = parseInt(card.dataset.capacity);
-            var size   = parseInt(card.dataset.size   || 0);
-            var rate   = parseFloat(card.dataset.rate);
-
-            var matchSearch = !query || name.includes(query) || loc.includes(query);
-            var matchAvail  = avail === 'all' || status === avail;
-            var matchPool   = !needPool || pool;
-            var matchCap    = cap  >= minCap;
-            var matchBath   = bath >= minBath;
-            var matchSize   = size >= minSize;
-            var matchPrice  = rate >= minPrice && rate <= maxPrice;
-
-            var show = matchSearch && matchAvail && matchPool && matchCap && matchBath && matchSize && matchPrice;
-            card.style.display = show ? '' : 'none';
-            if (show) visible++;
-        });
-
-        document.getElementById('resultCount').textContent = visible;
-        document.getElementById('noResults').style.display = visible === 0 ? 'inline' : 'none';
-    }
-
-    function resetFilters() {
-        document.querySelector('input[name="availability"][value="all"]').checked = true;
-        document.getElementById('filter-pool').checked = false;
-        document.getElementById('filterCapacity').value  = '';
-        document.getElementById('filterBathrooms').value = '';
-        document.getElementById('filterSize').value      = '';
-        document.getElementById('priceMin').value = '';
-        document.getElementById('priceMax').value = '';
-        searchBar.value = '';
-        clearBtn.style.display = 'none';
-        applyFilters();
-    }
-
-    // Init count on load
-    window.addEventListener('DOMContentLoaded', applyFilters);
-</script>
+<script src="assets/js/dashboard.js"></script>
 </body>
 </html>

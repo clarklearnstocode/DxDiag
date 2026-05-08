@@ -67,6 +67,10 @@ class PropertyController {
             header("Location: index.php?action=view_property&id={$property_id}&error=dates");
             exit();
         }
+        if (!$this->isValidDateRange($check_in, $check_out)) {
+            header("Location: index.php?action=view_property&id={$property_id}&error=invalid_date_range");
+            exit();
+        }
 
         // Server-side date overlap check
         $overlapStmt = $this->db->prepare(
@@ -86,9 +90,7 @@ class PropertyController {
             die("Invalid property selection.");
         }
 
-        $d1           = new DateTime($check_in);
-        $d2           = new DateTime($check_out);
-        $days         = $d1->diff($d2)->days ?: 1;
+        $days         = $this->calculateStayNights($check_in, $check_out);
         $total_amount = $property['Property_rate'] * $days;
 
         try {
@@ -268,6 +270,10 @@ class PropertyController {
             header("Location: index.php?action=edit_booking&id={$booking_id}&error=dates");
             exit();
         }
+        if (!$this->isValidDateRange($check_in, $check_out)) {
+            header("Location: index.php?action=edit_booking&id={$booking_id}&error=invalid_date_range");
+            exit();
+        }
 
         // Server-side overlap check (excluding this booking)
         $overlapStmt = $this->db->prepare(
@@ -283,9 +289,7 @@ class PropertyController {
         }
 
         // Recalculate amount
-        $d1     = new DateTime($check_in);
-        $d2     = new DateTime($check_out);
-        $nights = $d1->diff($d2)->days ?: 1;
+        $nights = $this->calculateStayNights($check_in, $check_out);
         $total  = $booking['Property_rate'] * $nights;
 
         // Update booking dates and times
@@ -300,5 +304,23 @@ class PropertyController {
 
         header("Location: index.php?action=my_bookings&success=updated");
         exit();
+    }
+
+    private function isValidDateRange(string $checkIn, string $checkOut): bool
+    {
+        $in = DateTime::createFromFormat('Y-m-d', $checkIn);
+        $out = DateTime::createFromFormat('Y-m-d', $checkOut);
+        if (!$in || !$out) {
+            return false;
+        }
+
+        return $out > $in;
+    }
+
+    private function calculateStayNights(string $checkIn, string $checkOut): int
+    {
+        $in = new DateTime($checkIn);
+        $out = new DateTime($checkOut);
+        return max(1, (int)$in->diff($out)->days);
     }
 }

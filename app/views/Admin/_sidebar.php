@@ -72,7 +72,7 @@ $initials   = strtoupper(substr($adminName, 0, 1));
     <hr class="sidebar-divider">
 
     <!-- Footer nav -->
-    <div class="nav-group" style="margin-bottom:0;">
+    <div class="nav-group u-nav-group-no-margin">
         <span class="nav-label">Session</span>
         <a href="index.php?action=home" class="nav-link nav-danger">
             <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

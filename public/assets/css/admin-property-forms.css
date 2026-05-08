@@ -1,0 +1,13 @@
+.u-editing-name { color: var(--primary); }
+.u-preview-wrap { margin-bottom: 14px; }
+.u-current-image { width: 100%; max-height: 220px; object-fit: cover; border-radius: 11px; border: 1px solid var(--border); }
+.u-current-image-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 7px; }
+.u-new-preview-wrap { display: none; margin-top: 10px; }
+.u-new-preview-img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+.u-new-preview-note { font-size: 0.73rem; color: var(--success); margin-top: 6px; }
+.u-actions-row { display: flex; gap: 12px; margin-top: 14px; }
+.u-actions-row .u-flex-grow { flex: 1; }
+.u-add-preview-wrap { display: none; margin-top: 12px; }
+.u-add-preview-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+.u-add-preview-note { font-size: 0.75rem; color: var(--success); margin-top: 7px; }
+.u-publish-btn { margin-top: 12px; }

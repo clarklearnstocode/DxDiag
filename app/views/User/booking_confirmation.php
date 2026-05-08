@@ -5,112 +5,7 @@
     <meta charset="UTF-8">
     <title>Booking Confirmed | EstateBook</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root { --primary: #c9a07a; --dark: #080808; --card: #141414; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-
-        .confirm-wrap { width: 100%; max-width: 560px; }
-
-        /* Animated checkmark */
-        .success-icon {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: rgba(46,204,113,0.12);
-            border: 2px solid rgba(46,204,113,0.3);
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 28px;
-            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
-        }
-        .success-icon svg { width: 36px; height: 36px; }
-        @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .confirm-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.1rem;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-        .confirm-sub {
-            text-align: center;
-            color: #555;
-            font-size: 0.9rem;
-            margin-bottom: 36px;
-        }
-
-        /* Property card */
-        .prop-card {
-            background: var(--card);
-            border: 1px solid #222;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        .prop-img { width: 100%; height: 200px; object-fit: cover; display: block; }
-        .prop-body { padding: 22px 24px; }
-        .prop-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 4px; }
-        .prop-loc  { color: #555; font-size: 0.85rem; margin-bottom: 18px; }
-
-        /* Summary rows */
-        .summary-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 11px 0;
-            border-bottom: 1px solid #1e1e1e;
-            font-size: 0.875rem;
-        }
-        .summary-row:last-child { border-bottom: none; }
-        .summary-label { color: #555; }
-        .summary-value { font-weight: 700; color: white; text-align: right; }
-        .summary-value.highlight { color: var(--primary); font-size: 1.05rem; }
-
-        /* Status pill */
-        .status-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: rgba(241,196,15,0.12);
-            color: #f1c40f;
-        }
-
-        /* Notice box */
-        .notice {
-            background: rgba(201,160,122,0.08);
-            border: 1px solid rgba(201,160,122,0.2);
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 0.82rem;
-            color: #a07c5a;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-        .notice strong { color: var(--primary); }
-
-        /* Buttons */
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn {
-            display: block; text-align: center; text-decoration: none;
-            padding: 15px; border-radius: 12px;
-            font-weight: 700; font-size: 0.875rem;
-            transition: 0.25s; font-family: 'DM Sans', sans-serif;
-        }
-        .btn-primary { background: var(--primary); color: #000; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,160,122,0.25); }
-        .btn-ghost  { background: #161616; color: #888; border: 1px solid #222; }
-        .btn-ghost:hover  { color: white; border-color: #444; }
-
-        /* Booking ID badge */
-        .booking-id {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #333;
-            margin-top: 18px;
-        }
-        .booking-id span { color: #555; font-weight: 700; }
-    </style>
+    <link rel="stylesheet" href="assets/css/booking-confirmation.css">
 </head>
 <body>
     <div class="confirm-wrap">
@@ -124,8 +19,8 @@
 
         <h1 class="confirm-title">Booking Submitted!</h1>
         <p class="confirm-sub">
-            Thank you, <strong style="color:white;"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Guest'); ?></strong>!<br>
-            Your reservation for <strong style="color:var(--primary);"><?php echo htmlspecialchars($booking['Property_Name']); ?></strong> is now pending review.
+            Thank you, <strong class="confirm-sub-user"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Guest'); ?></strong>!<br>
+            Your reservation for <strong class="confirm-sub-property"><?php echo htmlspecialchars($booking['Property_Name']); ?></strong> is now pending review.
         </p>
 
         <!-- Property card with summary -->

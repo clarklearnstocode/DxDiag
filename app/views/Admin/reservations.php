@@ -50,32 +50,32 @@
                     };
                 ?>
                 <tr>
-                    <td style="color:var(--text-faint);font-size:0.8rem;">#<?php echo $res['Booking_Id']; ?></td>
+                    <td class="u-text-muted u-fs-08">#<?php echo $res['Booking_Id']; ?></td>
                     <td><strong><?php echo htmlspecialchars($res['Name'] ?? 'Unknown'); ?></strong></td>
                     <td><strong><?php echo htmlspecialchars($res['Property_Name'] ?? 'N/A'); ?></strong></td>
-                    <td style="font-size:0.82rem;line-height:1.75;">
-                        <span style="color:var(--primary);font-weight:700;font-size:0.68rem;letter-spacing:0.5px;">IN</span>&nbsp;
+                    <td class="u-check-col">
+                        <span class="u-inline-primary u-fw-700 u-fs-068 u-ls-05">IN</span>&nbsp;
                         <?php if ($ci && $ci !== '0000-00-00'): ?>
                             <?php echo date('M d, Y', strtotime($ci)); ?>
                             <?php if (!empty($res['Check_In_Time'])): ?>
-                                <span style="color:#555;font-size:0.75rem;">&nbsp;·&nbsp;<?php echo date('g:i A', strtotime($res['Check_In_Time'])); ?></span>
+                                <span class="u-text-muted u-fs-075">&nbsp;·&nbsp;<?php echo date('g:i A', strtotime($res['Check_In_Time'])); ?></span>
                             <?php endif; ?>
                         <?php else: ?>
-                            <span style="color:var(--danger);">Not set</span>
+                            <span class="u-inline-danger">Not set</span>
                         <?php endif; ?>
                         <br>
-                        <span style="color:var(--primary);font-weight:700;font-size:0.68rem;letter-spacing:0.5px;">OUT</span>&nbsp;
+                        <span class="u-inline-primary u-fw-700 u-fs-068 u-ls-05">OUT</span>&nbsp;
                         <?php if ($co && $co !== '0000-00-00'): ?>
                             <?php echo date('M d, Y', strtotime($co)); ?>
                             <?php if (!empty($res['Check_Out_Time'])): ?>
-                                <span style="color:#555;font-size:0.75rem;">&nbsp;·&nbsp;<?php echo date('g:i A', strtotime($res['Check_Out_Time'])); ?></span>
+                                <span class="u-text-muted u-fs-075">&nbsp;·&nbsp;<?php echo date('g:i A', strtotime($res['Check_Out_Time'])); ?></span>
                             <?php endif; ?>
                         <?php else: ?>
-                            <span style="color:var(--danger);">Not set</span>
+                            <span class="u-inline-danger">Not set</span>
                         <?php endif; ?>
                     </td>
                     <td><strong>₱<?php echo number_format($res['Amount'] ?? 0); ?></strong></td>
-                    <td style="color:var(--text-muted);font-size:0.82rem;"><?php echo htmlspecialchars($res['Payment_Method'] ?? 'N/A'); ?></td>
+                    <td class="u-text-muted u-fs-082"><?php echo htmlspecialchars($res['Payment_Method'] ?? 'N/A'); ?></td>
                     <td><span class="badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($st); ?></span></td>
                     <td>
                         <a href="index.php?action=manage_booking&id=<?php echo $res['Booking_Id']; ?>" class="btn btn-primary">Manage</a>

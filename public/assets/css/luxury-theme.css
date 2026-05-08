@@ -1,0 +1,167 @@
+:root {
+    --lux-bg: #f8f6f1;
+    --lux-surface: #ffffff;
+    --lux-surface-soft: #f3efe6;
+    --lux-text: #001f3f;
+    --lux-muted: #333333;
+    --lux-accent: #005f56;
+    --lux-gold: #cdaa56;
+    --lux-coral: #ff7f50;
+    --lux-border: #e4dccb;
+    --lux-shadow: 0 12px 28px rgba(30, 42, 58, 0.08);
+}
+
+html, body {
+    background: var(--lux-bg) !important;
+    color: var(--lux-text) !important;
+}
+
+body, p, span, label, li, a, input, select, textarea, button {
+    color: var(--lux-text);
+    font-weight: 500;
+}
+
+/* Generic surface system */
+.sidebar, .admin-sidebar, .form-card, .booking-card, .login-card, .property-card,
+.lite-card, .current-card, .detail-card, .dropdown-menu, .main-footer,
+table, .data-table, .card, .stat-card {
+    background: var(--lux-surface) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+    box-shadow: var(--lux-shadow);
+}
+
+.header-top, .glass-nav, .search-box-sleek, .upload-zone, .top-nav, .main-content,
+.main-admin, .form-side, .booked-info, .total-box {
+    background: transparent !important;
+}
+
+/* Links and accents */
+a, .logo span, .admin-logo .logo-text span, .badge, .section-title,
+.form-section-label, .filter-label, .card-rate, .price-tag, .nav-link.active {
+    color: var(--lux-accent) !important;
+}
+
+/* Typography hierarchy */
+h1, h2, h3, .hero-content h1, .page-header-left h1, .section-header h2, .page-heading h2 {
+    color: var(--lux-text) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em;
+}
+
+h4, h5, h6, .card-title, .prop-cell-name, .current-name, .lite-card h4 {
+    color: var(--lux-accent) !important;
+    font-weight: 700 !important;
+}
+
+p, .subtitle, .card-loc, .prop-cell-loc, .footer-brand p, .footer-links a, .filter-label, .form-label {
+    color: var(--lux-muted) !important;
+    font-weight: 500 !important;
+}
+
+/* Buttons */
+button, .btn, .btn-login, .btn-reg, .btn-search, .btn-confirm, .btn-save,
+.btn-admin-login, .btn-apply, .btn-book-lite, .btn-view, .btn-primary {
+    background: var(--lux-accent) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--lux-accent) !important;
+    border-radius: 12px !important;
+}
+
+.btn-reset, .btn-cancel-link, .btn-ghost, .btn-ghost-primary {
+    background: #ffffff !important;
+    color: var(--lux-accent) !important;
+    border: 1px solid var(--lux-border) !important;
+}
+
+/* Inputs */
+input, select, textarea, .search-bar, .sidebar-input, .price-inputs input {
+    background: #ffffff !important;
+    color: var(--lux-text) !important;
+    border: 1px solid rgba(205, 170, 86, 0.35) !important;
+    box-shadow: 0 4px 12px rgba(30, 42, 58, 0.06) !important;
+}
+
+input::placeholder, textarea::placeholder, .search-bar::placeholder {
+    color: var(--lux-muted) !important;
+}
+
+/* Gold highlights */
+.glass-nav, .admin-sidebar, .booking-card, .form-card, .property-card:hover,
+.nav-link.active, .search-box-sleek, .main-footer, .chip-avatar, .logo-mark {
+    border-color: var(--lux-gold) !important;
+}
+
+/* Urgency / warning / sales highlight */
+.date-warning, .alert-error, .alert-danger, .tag-occupied, .badge-rejected {
+    color: var(--lux-coral) !important;
+    border-color: rgba(255, 127, 80, 0.45) !important;
+    background: rgba(255, 127, 80, 0.08) !important;
+}
+
+/* Hero + feature sections */
+.hero {
+    background: linear-gradient(to right, rgba(248, 246, 241, 0.18), rgba(248, 246, 241, 0.05)), url('../img/explore.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+/* Landing featured cards were rendered with inline dark backgrounds; force light card treatment */
+.property-grid-lite > div {
+    background: var(--lux-surface) !important;
+    border: 1px solid rgba(205, 170, 86, 0.45) !important;
+    border-radius: 20px !important;
+    box-shadow: var(--lux-shadow) !important;
+}
+
+.property-grid-lite > div h4,
+.property-grid-lite > div p,
+.property-grid-lite > div span {
+    color: var(--lux-text) !important;
+}
+
+.property-grid-lite > div a {
+    color: var(--lux-accent) !important;
+    border-color: var(--lux-accent) !important;
+}
+
+.property-grid-lite > div a:hover {
+    color: #ffffff !important;
+}
+
+.hero-content p, .section-header p, .subtitle, .card-loc, .footer-brand p, .footer-links a {
+    color: var(--lux-muted) !important;
+}
+
+.explore-section {
+    background: var(--lux-bg) !important;
+    color: var(--lux-text) !important;
+}
+
+.main-footer {
+    background: var(--lux-surface-soft) !important;
+}
+
+.social-icons a {
+    background: #ffffff !important;
+    border: 1px solid var(--lux-border) !important;
+}
+
+.social-icons a img {
+    filter: none !important;
+}
+
+/* Spacious premium layout touches */
+.main-content, .main-admin, .container, .booking-container {
+    padding-top: 28px !important;
+}
+
+.property-grid, .property-grid-lite, .stats-grid {
+    gap: 26px !important;
+}
+
+/* Restore structural lift on light backgrounds */
+.search-wrap, .search-box-sleek, .filter-section, .price-inputs, .sidebar, .header-top, .property-card, .lite-card {
+    border-color: rgba(205, 170, 86, 0.35) !important;
+    box-shadow: 0 8px 20px rgba(30, 42, 58, 0.07) !important;
+}

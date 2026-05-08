@@ -12,13 +12,17 @@ class AdminController {
 
     // ── Auth guard helper ──
     private function requireAdmin() {
-        if (!isset($_SESSION['admin_logged_in'])) {
+        if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
             header("Location: index.php?action=admin_login");
             exit();
         }
     }
 
     public function showLogin() {
+        if (!empty($_SESSION['admin_logged_in']) && !empty($_SESSION['admin_id'])) {
+            header("Location: index.php?action=admin_dashboard");
+            exit();
+        }
         require_once __DIR__ . '/../views/Admin/admin_login.php';
     }
 
@@ -26,46 +30,44 @@ class AdminController {
         $username = $_POST['username'] ?? '';
         $passcode = $_POST['passcode'] ?? '';
 
-        $query = "SELECT * FROM Admin WHERE Username = ? AND Password = ? LIMIT 1";
+        $query = "SELECT * FROM Admin WHERE Username = ? LIMIT 1";
         $stmt  = $this->db->prepare($query);
-        $stmt->execute([$username, $passcode]);
+        $stmt->execute([$username]);
         $admin_user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        $validPassword = false;
         if ($admin_user) {
-            // ── 2FA: generate OTP and send to admin email ──
-            require_once __DIR__ . '/../../app/services/OTPService.php';
-            require_once __DIR__ . '/../../app/services/Mailer.php';
+            $stored = (string)($admin_user['Password'] ?? '');
+            $validPassword = password_verify($passcode, $stored) || hash_equals($stored, $passcode);
+        }
 
-            $otp = OTPService::generate('admin');
+        if ($admin_user && $validPassword) {
+            session_regenerate_id(true);
 
-            // Store admin identity temporarily
-            $_SESSION['2fa_pending_admin'] = [
-                'id'   => $admin_user['Admin_Id'],
-                'name' => $admin_user['Admin_Name'],
-            ];
+            // Always persist core admin identity immediately after successful credentials.
+            $_SESSION['admin_id']   = (int)$admin_user['Admin_Id'];
+            $_SESSION['admin_name'] = $admin_user['Admin_Name'];
 
-            $adminEmail = $admin_user['Email'] ?? '';
-            $adminName  = $admin_user['Admin_Name'];
+            $totpEnabled = !empty($admin_user['totp_enabled']);
+            $totpSecret  = trim((string)($admin_user['totp_secret'] ?? ''));
 
-            if (empty($adminEmail)) {
-                // No email configured — skip 2FA, log in directly
-                $_SESSION['admin_logged_in'] = true;
-                $_SESSION['admin_id']        = $admin_user['Admin_Id'];
-                $_SESSION['admin_name']      = $admin_user['Admin_Name'];
-                header("Location: index.php?action=admin_dashboard");
-                exit();
-            }
-
-            $result = Mailer::sendOTP($adminEmail, $adminName, $otp, 'Admin');
-
-            if ($result === true) {
-                header("Location: index.php?action=verify_otp&role=admin");
+            if ($totpEnabled && $totpSecret !== '') {
+                // Require 2FA only when it is already configured.
+                $_SESSION['admin_logged_in'] = false;
+                $_SESSION['2fa_pending_admin'] = [
+                    'id'           => (int)$admin_user['Admin_Id'],
+                    'name'         => $admin_user['Admin_Name'],
+                    'totp_enabled' => 1,
+                    'totp_secret'  => $totpSecret,
+                ];
+                header("Location: index.php?action=verify_totp&role=admin");
             } else {
-                error_log("EstateBook Mailer error (admin): $result");
-                header("Location: index.php?action=verify_otp&role=admin&mail_error=1");
+                // Fallback for environments where admin TOTP is not set up yet.
+                $_SESSION['admin_logged_in'] = true;
+                unset($_SESSION['2fa_pending_admin']);
+                header("Location: index.php?action=admin_dashboard");
             }
             exit();
-
         } else {
             header("Location: index.php?action=admin_login&error=invalid");
             exit();

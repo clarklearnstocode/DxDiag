@@ -4,6 +4,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Inject global theme stylesheet into all rendered HTML views.
+ob_start(function ($buffer) {
+    if (stripos($buffer, '</head>') !== false && stripos($buffer, 'assets/css/luxury-theme.css') === false) {
+        $themeLink = '<link rel="stylesheet" href="assets/css/luxury-theme.css?v=1">' . "\n";
+        return preg_replace('/<\/head>/i', $themeLink . '</head>', $buffer, 1);
+    }
+    return $buffer;
+});
+
 // Define reliable absolute paths for file uploads
 // __DIR__ = .../public  (the folder index.php lives in)
 define('BASE_PATH',   __DIR__);
@@ -71,7 +80,7 @@ switch ($action) {
 
     case 'register':
     case 'signup':
-        $auth->showSignup();
+        $auth->showSignup();   // loads register.php
         break;
 
     case 'handleSignup':
@@ -117,12 +126,20 @@ switch ($action) {
         $controller->updateBooking();
         break;
 
-    case 'verify_otp':
-        $auth->showVerifyOTP();
+    case 'setup_totp':
+        $auth->showSetupTOTP();
         break;
 
-    case 'handle_verify_otp':
-        $auth->handleVerifyOTP();
+    case 'confirm_totp_setup':
+        $auth->confirmTOTPSetup();
+        break;
+
+    case 'verify_totp':
+        $auth->showVerifyTOTP();
+        break;
+
+    case 'handle_verify_totp':
+        $auth->handleVerifyTOTP();
         break;
 
     case 'logout':

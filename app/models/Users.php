@@ -1,52 +1,26 @@
 <?php
-class User {
-    private $conn;
-    private $table_name = "User";
+class User
+{
+    private PDO $conn;
 
-    public $User_Id;
-    public $Name;
-    public $Phone;
-    public $Email;
-    public $Username;
-    public $Password;
-
-    public function __construct($db) {
+    public function __construct(PDO $db)
+    {
         $this->conn = $db;
     }
 
-    // Method to create a new user (Registration)
-    public function register() {
-        // UPDATED: Changed 'full_name' to 'Name' to match your SQL table
-        $query = "INSERT INTO " . $this->table_name . " 
-                  SET Name=:name, Phone=:phone, Email=:email, Username=:username, Password=:password";
+    /**
+     * Login lookup by username or email.
+     */
+    public function login(string $identity): array|false
+    {
+        $sql = "SELECT User_Id, Name, Email, Phone, Password, profile_image, totp_enabled, totp_secret
+                FROM User
+                WHERE Email = :identity OR Username = :identity
+                LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':identity', trim($identity), PDO::PARAM_STR);
+        $stmt->execute();
 
-        $stmt = $this->conn->prepare($query);
-
-        // Sanitize inputs
-        $this->Name = htmlspecialchars(strip_tags($this->Name));
-        $this->Phone = htmlspecialchars(strip_tags($this->Phone));
-        $this->Email = htmlspecialchars(strip_tags($this->Email));
-        $this->Username = htmlspecialchars(strip_tags($this->Username));
-        
-        // Bind values
-        $stmt->bindParam(":name", $this->Name);
-        $stmt->bindParam(":phone", $this->Phone);
-        $stmt->bindParam(":email", $this->Email);
-        $stmt->bindParam(":username", $this->Username);
-        $stmt->bindParam(":password", $this->Password);
-
-        if($stmt->execute()) {
-            return true;
-        }
-        return false;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
-    // Method for Login
-    public function login($identity) {
-    $query = "SELECT * FROM " . $this->table_name . " WHERE Username = :id OR Email = :id LIMIT 1";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':id', $identity);
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
 }
