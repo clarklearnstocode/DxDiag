@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #0a0a0a; --card: #161616; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif; padding: 40px 50px; line-height: 1.6; }
 .header-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 30px; }
@@ -51,3 +59,26 @@ hr.divider { border: none; border-top: 1px solid #1e1e1e; margin: 20px 0; }
 .about-section p { color: #777; font-size: 0.9rem; line-height: 1.75; }
 .dropdown-divider { border: 0; border-top: 1px solid #222; margin: 4px 0; }
 .logout-link-danger { color: #ff4444; }
+
+body input[type="date"],
+body input[type="time"],
+body input[type="text"],
+body select {
+    background: #ffffff !important;
+    border: 1px solid #e4dccb !important;
+    color: #001f3f !important;
+}
+
+body input[type="date"]:focus,
+body input[type="time"]:focus,
+body input[type="text"]:focus,
+body select:focus {
+    border-color: #cdaa56 !important;
+    background: #ffffff !important;
+}
+
+body input[readonly] {
+    background: #ffffff !important;
+    border-color: #e4dccb !important;
+    color: #001f3f !important;
+}

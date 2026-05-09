@@ -1,4 +1,12 @@
 /* Landing page extracted styles */
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 .logo-clickable {
     cursor: pointer;
 }

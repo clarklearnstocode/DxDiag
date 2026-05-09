@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #0a0a0a; --card: #111; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--dark); color:white; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
 .wrap { width:100%; max-width:520px; }
@@ -11,6 +19,14 @@ h2 { font-size:1.3rem; font-weight:800; margin-bottom:6px; }
 .step { display:flex; gap:14px; align-items:flex-start; margin-bottom:16px; }
 .step-num { width:27px; height:27px; border-radius:50%; flex-shrink:0; background:rgba(201,160,122,0.12); border:1px solid rgba(201,160,122,0.3); color:var(--primary); font-size:0.72rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px; }
 .step-text { font-size:0.875rem; color:#777; line-height:1.6; }
+.step .step-num,
+.step .step-text {
+    color: #333333 !important;
+}
+.step .step-num {
+    background: #f5efe0 !important;
+    border-color: #d8c8a6 !important;
+}
 .step-text strong { color:white; }
 .app-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:7px; }
 .app-tag { background:#1a1a1a; border:1px solid #252525; border-radius:7px; padding:5px 11px; font-size:0.72rem; color:#555; }

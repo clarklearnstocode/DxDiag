@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #080808; --card: #141414; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif; padding: 50px; }
 .container { max-width: 900px; margin: 0 auto; }
@@ -41,6 +49,15 @@ h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 5
 .btn-cancel-booking { display: inline-flex; align-items: center; gap: 6px; background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: 0.2s; }
 .btn-cancel-booking:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
 .pending-note { font-size: 0.72rem; color: #333; display: flex; align-items: center; gap: 5px; margin-right: auto; }
+.card-actions .pending-note,
+.card-actions .pending-note svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+.card-actions .pending-note strong,
+.card-actions .pending-note em {
+    color: #cdaa56 !important;
+}
 .empty-state { text-align: center; padding: 60px 30px; background: var(--card); border-radius: 20px; border: 1px dashed #1e1e1e; }
 .empty-state .emoji { font-size: 2.5rem; margin-bottom: 14px; }
 .empty-state p { color: #444; margin-bottom: 20px; font-size: 0.9rem; }

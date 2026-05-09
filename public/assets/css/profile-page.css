@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #0a0a0a; --card: #141414; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif; padding: 50px; min-height: 100vh; }
 .container { max-width: 680px; margin: 0 auto; }
@@ -34,6 +42,23 @@ h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 6
 label.field-label { display: block; font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 7px; }
 input[type="text"], input[type="email"], input[type="password"], input[type="tel"] { width: 100%; padding: 13px 15px; background: #0d0d0d; border: 1px solid #222; border-radius: 10px; color: white; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; outline: none; transition: 0.25s; }
 input:focus { border-color: var(--primary); background: #111; }
+
+body input[type="text"],
+body input[type="email"],
+body input[type="password"],
+body input[type="tel"] {
+    background: #ffffff !important;
+    border: 1px solid #e4dccb !important;
+    color: #001f3f !important;
+}
+
+body input[type="text"]:focus,
+body input[type="email"]:focus,
+body input[type="password"]:focus,
+body input[type="tel"]:focus {
+    border-color: #cdaa56 !important;
+    background: #ffffff !important;
+}
 .password-wrap { position: relative; }
 .toggle-pw { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #444; cursor: pointer; font-size: 0.8rem; transition: color 0.2s; }
 .toggle-pw:hover { color: #aaa; }

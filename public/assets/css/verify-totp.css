@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #0a0a0a; --card: #111; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--dark); color:white; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
 .card { background:var(--card); border:1px solid #1e1e1e; border-radius:22px; padding:44px 40px; width:100%; max-width:400px; text-align:center; }

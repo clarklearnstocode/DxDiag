@@ -1,4 +1,12 @@
 /* Dashboard page extracted inline styles */
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 .result-filter-section {
     margin-top: auto;
     padding-top: 20px;

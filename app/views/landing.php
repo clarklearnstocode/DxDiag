@@ -6,8 +6,9 @@
     <title>EstateBook | Premium Real Estate</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="assets/css/landing.css">
+    <link rel="stylesheet" href="assets/css/landing.css?v=2.0">
     <link rel="stylesheet" href="assets/css/landing-page.css">
+    
 </head>
 <body id="home">
     <div id="landing-data" data-slides='<?php echo htmlspecialchars(json_encode($properties), ENT_QUOTES, "UTF-8"); ?>'></div>

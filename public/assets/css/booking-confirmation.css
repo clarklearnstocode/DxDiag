@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #080808; --card: #141414; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
 .confirm-wrap { width: 100%; max-width: 560px; }
@@ -30,3 +38,10 @@ body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif
 .btn-ghost:hover { color: white; border-color: #444; }
 .booking-id { text-align: center; font-size: 0.75rem; color: #333; margin-top: 18px; }
 .booking-id span { color: #555; font-weight: 700; }
+
+.prop-card .summary-row .summary-label,
+.prop-card .summary-row .summary-value,
+.prop-card .prop-name,
+.prop-card .prop-loc {
+    color: #ffffff !important;
+}

@@ -1,4 +1,12 @@
 :root { --primary: #c9a07a; --dark: #080808; --card: #141414; }
+body,
+body p,
+body span,
+body label,
+body div {
+    color: inherit;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--dark); color: white; font-family: 'DM Sans', sans-serif; padding: 50px; }
 .container { max-width: 700px; margin: 0 auto; }
