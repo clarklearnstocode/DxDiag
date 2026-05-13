@@ -6,7 +6,7 @@
     <title>EstateBook | Set Up Two-Factor Authentication</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link rel="stylesheet" href="assets/css/setup-totp.css">
+    <link rel="stylesheet" href="assets/css/setup-totp.css?v=1.2">
 </head>
 <body>
 <div id="setupTotpData" data-otpauth-uri="<?php echo htmlspecialchars($otpauthUri, ENT_QUOTES, 'UTF-8'); ?>"></div>

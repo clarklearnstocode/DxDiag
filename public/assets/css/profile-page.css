@@ -1,10 +1,18 @@
-:root { --primary: #c9a07a; --dark: #0a0a0a; --card: #141414; }
+:root { --primary: #c9a07a; --dark: #0a0a0a; --card: #005f56; }
 body,
-body p,
 body span,
 body label,
 body div {
     color: inherit;
+}
+
+.avatar-info p,
+.avatar-info span {
+    color: white !important;
+}
+
+.avatar-info h3{
+    color: #c9a07a !important;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -59,6 +67,7 @@ body input[type="tel"]:focus {
     border-color: #cdaa56 !important;
     background: #ffffff !important;
 }
+
 .password-wrap { position: relative; }
 .toggle-pw { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #444; cursor: pointer; font-size: 0.8rem; transition: color 0.2s; }
 .toggle-pw:hover { color: #aaa; }

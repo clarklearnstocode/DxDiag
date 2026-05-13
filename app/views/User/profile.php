@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>My Profile | EstateBook</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/profile-page.css">
+    <link rel="stylesheet" href="assets/css/profile-page.css?v=1.2">
 </head>
 <body>
     <div class="container">

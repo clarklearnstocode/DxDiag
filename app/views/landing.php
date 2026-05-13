@@ -6,8 +6,9 @@
     <title>EstateBook | Premium Real Estate</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="assets/css/landing.css?v=2.0">
-    <link rel="stylesheet" href="assets/css/landing-page.css">
+    <link rel="stylesheet" href="assets/css/luxury-theme.css?v=1.2">
+    <link rel="stylesheet" href="assets/css/landing.css?v=1.2">
+    <link rel="stylesheet" href="assets/css/landing-page.css?v=1.2">
     
 </head>
 <body id="home">
@@ -19,7 +20,7 @@
             <li><a href="#home">Home</a></li>
             <li><a href="#explore">Estates</a></li>
             <li><a href="index.php?action=login">Log In</a></li>
-            <li><a href="#contact" class="btn-filled btn-contact">Contact Us</a></li>
+            <li><a href="#contact" class="btn-contact">Contact Us</a></li>
         </ul>
     </nav>
 

@@ -43,11 +43,11 @@ h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 5
 .badge-cancelled { background: rgba(120,120,120,0.1); color: #777; }
 .badge-completed { background: rgba(100,149,237,0.1); color: #6495ed; }
 .payment-method { font-size: 0.72rem; color: #383838; margin-top: 6px; }
-.card-actions { border-top: 1px solid #1a1a1a; padding: 14px 24px; display: flex; justify-content: flex-end; gap: 10px; background: #0f0f0f; }
-.btn-edit-booking { display: inline-flex; align-items: center; gap: 6px; background: rgba(201,160,122,0.1); color: var(--primary); border: 1px solid rgba(201,160,122,0.2); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: 0.2s; }
-.btn-edit-booking:hover { background: var(--primary); color: #000; }
-.btn-cancel-booking { display: inline-flex; align-items: center; gap: 6px; background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: 0.2s; }
-.btn-cancel-booking:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
+.card-actions { border-top: 1px solid #1a1a1a; padding: 14px 24px; display: flex; justify-content: flex-end; gap: 10px; background: #005f56; }
+.btn-edit-booking { display: inline-flex; align-items: center; gap: 6px; background: #c29061; color: var(--primary); border: 1px solid rgba(146, 102, 60, 0.2); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: 0.2s; }
+.btn-edit-booking:hover { background: #ffdfa3; color: #000; }
+.btn-cancel-booking { display: inline-flex; align-items: center; gap: 6px; background: #e74c3c; color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: 0.2s; }
+.btn-cancel-booking:hover { background: #f37668; color: white; border-color: #e74c3c; }
 .pending-note { font-size: 0.72rem; color: #333; display: flex; align-items: center; gap: 5px; margin-right: auto; }
 .card-actions .pending-note,
 .card-actions .pending-note svg {

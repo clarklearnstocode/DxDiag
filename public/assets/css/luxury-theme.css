@@ -61,12 +61,14 @@ p, .subtitle, .card-loc, .prop-cell-loc, .footer-brand p, .footer-links a, .filt
 
 /* Buttons */
 button, .btn, .btn-login, .btn-reg, .btn-search, .btn-confirm, .btn-save,
-.btn-admin-login, .btn-apply, .btn-book-lite, .btn-view, .btn-primary {
+.btn-admin-login, .btn-apply, .btn-view, .btn-primary {
     background: var(--lux-accent) !important;
     color: #ffffff !important;
     border: 1px solid var(--lux-accent) !important;
     border-radius: 12px !important;
 }
+
+
 
 .btn-reset, .btn-cancel-link, .btn-ghost, .btn-ghost-primary {
     background: #ffffff !important;

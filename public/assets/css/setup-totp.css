@@ -1,6 +1,7 @@
 :root { --primary: #c9a07a; --dark: #0a0a0a; --card: #111; }
 body,
 body p,
+strong,
 body span,
 body label,
 body div {
@@ -12,16 +13,16 @@ body { background:var(--dark); color:white; font-family:'Inter',sans-serif; disp
 .wrap { width:100%; max-width:520px; }
 .logo { font-weight:800; font-size:1.3rem; text-align:center; margin-bottom:24px; }
 .logo span { color:var(--primary); }
-.card { background:var(--card); border:1px solid #1e1e1e; border-radius:22px; padding:40px; }
+.card { background:var(--card); border:1px solid #000000; border-radius:22px; padding:40px; }
 h2 { font-size:1.3rem; font-weight:800; margin-bottom:6px; }
-.sub { color:#555; font-size:0.85rem; line-height:1.6; margin-bottom:26px; }
+.sub { color:#000000; font-size:0.85rem; line-height:1.6; margin-bottom:26px; }
 .steps { margin-bottom:24px; }
 .step { display:flex; gap:14px; align-items:flex-start; margin-bottom:16px; }
 .step-num { width:27px; height:27px; border-radius:50%; flex-shrink:0; background:rgba(201,160,122,0.12); border:1px solid rgba(201,160,122,0.3); color:var(--primary); font-size:0.72rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px; }
 .step-text { font-size:0.875rem; color:#777; line-height:1.6; }
 .step .step-num,
-.step .step-text {
-    color: #333333 !important;
+.step .step-text, strong {
+    color: #0e0e0e !important;
 }
 .step .step-num {
     background: #f5efe0 !important;
@@ -29,14 +30,14 @@ h2 { font-size:1.3rem; font-weight:800; margin-bottom:6px; }
 }
 .step-text strong { color:white; }
 .app-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:7px; }
-.app-tag { background:#1a1a1a; border:1px solid #252525; border-radius:7px; padding:5px 11px; font-size:0.72rem; color:#555; }
-.qr-card { background:#0d0d0d; border:1px solid #222; border-radius:16px; padding:26px; text-align:center; margin-bottom:20px; }
+.app-tag { background:#005f56; border:1px solid #252525; border-radius:7px; padding:5px 11px; font-size:0.72rem; color:#ffffff; }
+.qr-card { background:#005f56; border:1px solid #222; border-radius:16px; padding:26px; text-align:center; margin-bottom:20px; }
+.qr-label { color:#eee !important; font-size:0.75rem; margin-top:10px; }
 #qrcode { display:inline-block; background:white; padding:12px; border-radius:10px; line-height:0; }
 #qrcode img { display:none !important; }
 #qrcode canvas { display:block !important; }
-.qr-label { color:#444; font-size:0.75rem; margin-top:10px; }
-.key-wrap { display:flex; align-items:center; gap:10px; background:#1a1a1a; border:1px dashed #2a2a2a; border-radius:10px; padding:12px 14px; margin-bottom:6px; }
-.key-text { font-family:'Courier New',monospace; font-size:0.95rem; font-weight:700; color:var(--primary); letter-spacing:2px; word-break:break-all; flex:1; }
+.key-wrap { display:flex; align-items:center; gap:10px; background:#005f56; border:1px dashed #2a2a2a; border-radius:10px; padding:12px 14px; margin-bottom:6px; }
+.key-text { font-family:'Courier New',monospace; font-size:0.95rem; font-weight:700; color:white; letter-spacing:2px; word-break:break-all; flex:1; }
 .copy-btn { background:rgba(201,160,122,0.1); border:1px solid rgba(201,160,122,0.2); color:var(--primary); padding:6px 12px; border-radius:7px; cursor:pointer; font-size:0.72rem; font-weight:700; font-family:'Inter',sans-serif; transition:0.2s; white-space:nowrap; flex-shrink:0; }
 .copy-btn:hover { background:var(--primary); color:#000; }
 .key-hint { font-size:0.72rem; color:#2a2a2a; margin-bottom:22px; }
