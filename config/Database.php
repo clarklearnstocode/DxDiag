@@ -2,9 +2,9 @@
 class Database {
     // Database credentials (override via env vars)
     private $host = "localhost";
-    private $db_name = "estatebook_db";
-    private $username = "Lance";
-    private $password = "Dxdiag2025";
+    private $db_name = "u367097290_estatebook"; 
+    private $username = "u367097290_estatebook"; 
+    private $password = "Dxdiag2026";
     public $conn;
 
     public function __construct() {
