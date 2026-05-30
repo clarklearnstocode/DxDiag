@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/Database.php';
-require_once __DIR__ . '/../models/Users.php';   // Class is named "User" (singular)
+require_once __DIR__ . '/../models/Users.php';
 
 class AuthController {
     private $db;
@@ -9,7 +9,7 @@ class AuthController {
     public function __construct() {
         $database   = new Database();
         $this->db   = $database->getConnection();
-        $this->user = new User($this->db);   // "User" not "Users"
+        $this->user = new User($this->db);
     }
 
     // ── Login pages ──────────────────────────────────────────
@@ -19,7 +19,7 @@ class AuthController {
     }
 
     public function showSignup() {
-        require_once __DIR__ . '/../views/register.php';   // file is register.php
+        require_once __DIR__ . '/../views/register.php';
     }
 
     // ── Dashboard ────────────────────────────────────────────
@@ -28,9 +28,163 @@ class AuthController {
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?action=login"); exit();
         }
+
+        $userId = (int)$_SESSION['user_id'];
+
+        // All properties — always shown regardless of Status
         $stmt       = $this->db->query("SELECT * FROM Property ORDER BY Property_Id DESC");
         $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // ── Feature 2: Upcoming booking countdown ──
+        $countdownWidget = null;
+        $upcomingStmt = $this->db->prepare(
+            "SELECT b.Booking_Id, b.Check_In, b.Check_Out,
+                    p.Property_Name, p.image_path
+             FROM Booking b
+             JOIN Property p ON b.Property_Id = p.Property_Id
+             WHERE b.User_Id = ?
+               AND b.Reservation_Status = 'Confirmed'
+               AND b.Check_In >= CURDATE()
+             ORDER BY b.Check_In ASC
+             LIMIT 1"
+        );
+        $upcomingStmt->execute([$userId]);
+        $upcomingBooking = $upcomingStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($upcomingBooking) {
+            $today    = new DateTime('today');
+            $checkIn  = new DateTime($upcomingBooking['Check_In']);
+            $checkOut = new DateTime($upcomingBooking['Check_Out']);
+            $daysLeft = (int)$today->diff($checkIn)->days;
+
+            $nights = (int)$checkIn->diff($checkOut)->days;
+
+            if ($daysLeft === 0) {
+                $countdownText = "Your stay at {$upcomingBooking['Property_Name']} begins today!";
+            } elseif ($daysLeft === 1) {
+                $countdownText = "Your stay at {$upcomingBooking['Property_Name']} begins tomorrow!";
+            } else {
+                $countdownText = "Your stay at {$upcomingBooking['Property_Name']} begins in {$daysLeft} days!";
+            }
+
+            $countdownWidget = [
+                'property_name' => $upcomingBooking['Property_Name'],
+                'image_path'    => $upcomingBooking['image_path'],
+                'check_in'      => date('F j, Y', strtotime($upcomingBooking['Check_In'])),
+                'check_out'     => date('F j, Y', strtotime($upcomingBooking['Check_Out'])),
+                'nights'        => $nights,
+                'days_left'     => $daysLeft,
+                'countdown_text'=> $countdownText,
+                'booking_id'    => $upcomingBooking['Booking_Id'],
+            ];
+        }
+
+        // ── Feature 3: Latest announcement ──
+        $announcement = null;
+        try {
+            $annStmt = $this->db->query(
+                "SELECT id, message, created_at FROM announcements ORDER BY id DESC LIMIT 1"
+            );
+            $announcement = $annStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (Exception $e) {
+            $announcement = null;
+        }
+
+        // ── Feature 4: Unread notification count ──
+        $unreadCount = 0;
+        try {
+            $nStmt = $this->db->prepare(
+                "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0"
+            );
+            $nStmt->execute([$userId]);
+            $unreadCount = (int)$nStmt->fetchColumn();
+        } catch (Exception $e) {
+            $unreadCount = 0;
+        }
+
+        // ── Feature: Past stays for review widget ──
+        $pastStays = [];
+        try {
+            $psStmt = $this->db->prepare(
+                "SELECT b.Booking_Id, b.Check_In, b.Check_Out,
+                        b.Reservation_Status,
+                        p.Property_Name, p.Property_location, p.image_path,
+                        pay.Amount,
+                        IF(r.id IS NOT NULL, 1, 0) AS has_review
+                 FROM Booking b
+                 JOIN Property p ON b.Property_Id = p.Property_Id
+                 LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                 LEFT JOIN reviews r   ON r.booking_id = b.Booking_Id
+                 WHERE b.User_Id = ?
+                   AND b.Reservation_Status IN ('Confirmed', 'Completed')
+                   AND b.Check_Out < CURDATE()
+                 ORDER BY b.Check_Out DESC
+                 LIMIT 6"
+            );
+            $psStmt->execute([$userId]);
+            $pastStays = $psStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            $pastStays = [];
+        }
+
         require_once __DIR__ . '/../views/User/dashboard.php';
+    }
+
+    // ── AJAX: Fetch notifications ────────────────────────────
+
+    public function getNotifications() {
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['notifications' => []]);
+            exit();
+        }
+        $userId = (int)$_SESSION['user_id'];
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT id, message, is_read, created_at
+                 FROM notifications
+                 WHERE user_id = ?
+                 ORDER BY created_at DESC
+                 LIMIT 20"
+            );
+            $stmt->execute([$userId]);
+            $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode(['notifications' => $notifications]);
+        } catch (Exception $e) {
+            echo json_encode(['notifications' => []]);
+        }
+        exit();
+    }
+
+    // ── AJAX: Mark all notifications as read ─────────────────
+
+    public function markNotificationsRead() {
+        if (!isset($_SESSION['user_id'])) { exit(); }
+        $userId = (int)$_SESSION['user_id'];
+        try {
+            $stmt = $this->db->prepare(
+                "UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0"
+            );
+            $stmt->execute([$userId]);
+        } catch (Exception $e) { /* silent */ }
+        echo json_encode(['ok' => true]);
+        exit();
+    }
+
+    // ── AJAX: Admin pending count (for sidebar live refresh) ─
+
+    public function getPendingCount() {
+        if (empty($_SESSION['admin_logged_in'])) {
+            echo json_encode(['count' => 0]); exit();
+        }
+        try {
+            $count = (int)$this->db->query(
+                "SELECT COUNT(*) FROM Booking WHERE Reservation_Status = 'Pending'"
+            )->fetchColumn();
+            echo json_encode(['count' => $count]);
+        } catch (Exception $e) {
+            echo json_encode(['count' => 0]);
+        }
+        exit();
     }
 
     // ── Profile ──────────────────────────────────────────────
@@ -124,10 +278,12 @@ class AuthController {
                     b.Booking_Id, b.Booking_Date, b.Check_In, b.Check_In_Time,
                     b.Check_Out, b.Check_Out_Time, b.Reservation_Status,
                     p.Property_Name, p.Property_location, p.image_path,
-                    pay.Amount, pay.Payment_Method
+                    pay.Amount, pay.Payment_Method,
+                    IF(r.id IS NOT NULL, 1, 0) AS has_review
                   FROM Booking b
-                  JOIN Property p ON b.Property_Id = p.Property_Id
+                  JOIN Property p    ON b.Property_Id  = p.Property_Id
                   LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                  LEFT JOIN reviews r   ON r.booking_id = b.Booking_Id
                   WHERE b.User_Id = ?
                   ORDER BY b.Booking_Id DESC";
         $stmt = $this->db->prepare($query);
@@ -188,7 +344,6 @@ class AuthController {
         if ($loggedUser && password_verify($password, $loggedUser['Password'])) {
             ob_end_clean();
 
-            // Store pending identity — not fully logged in yet
             $_SESSION['2fa_pending_user'] = [
                 'id'       => $loggedUser['User_Id'],
                 'name'     => $loggedUser['Name'],
@@ -200,10 +355,8 @@ class AuthController {
             ];
 
             if (!empty($loggedUser['totp_enabled']) && !empty($loggedUser['totp_secret'])) {
-                // 2FA set up → go to verify page
                 header("Location: index.php?action=verify_totp&role=user");
             } else {
-                // 2FA not set up yet → go to setup page
                 header("Location: index.php?action=setup_totp&role=user");
             }
             exit();
@@ -220,7 +373,6 @@ class AuthController {
 
         $role = $_GET['role'] ?? 'user';
 
-        // Verify there's a pending login
         $pendingKey = $role === 'admin' ? '2fa_pending_admin' : '2fa_pending_user';
         if (empty($_SESSION[$pendingKey])) {
             header("Location: index.php?action=" . ($role === 'admin' ? 'admin_login' : 'login'));
@@ -230,18 +382,16 @@ class AuthController {
         $pending = $_SESSION[$pendingKey];
         $label   = $role === 'admin' ? ($pending['name'] . ' (Admin)') : $pending['email'];
 
-        // Generate a fresh secret for this setup session
         if (empty($_SESSION['totp_setup_secret'])) {
             $_SESSION['totp_setup_secret'] = TOTPService::generateSecret();
         }
         $secret     = $_SESSION['totp_setup_secret'];
         $otpauthUri = TOTPService::getOtpauthUri($secret, $label);
-        // $qrUrl no longer needed — QR is rendered client-side by qrcode.js
 
         require_once __DIR__ . '/../views/setup_totp.php';
     }
 
-    // ── Confirm TOTP setup (saves secret to DB) ──────────────
+    // ── Confirm TOTP setup ───────────────────────────────────
 
     public function confirmTOTPSetup() {
         require_once __DIR__ . '/../../app/services/TOTPService.php';
@@ -261,7 +411,6 @@ class AuthController {
             exit();
         }
 
-        // Save secret to DB
         $pending = $_SESSION[$pendingKey];
         if ($role === 'admin') {
             $this->db->prepare(
@@ -274,8 +423,6 @@ class AuthController {
         }
 
         unset($_SESSION['totp_setup_secret']);
-
-        // Fully log in
         $this->completeLogin($role, $pending);
     }
 

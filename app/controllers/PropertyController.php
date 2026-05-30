@@ -29,7 +29,7 @@ class PropertyController {
             die("Property not found.");
         }
 
-        // Fetch all active bookings so the front-end can block those date ranges
+        // Fetch active bookings for calendar availability
         $sql = "SELECT Booking_Id, Check_In, Check_Out
                 FROM Booking
                 WHERE Property_Id = ?
@@ -39,6 +39,53 @@ class PropertyController {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         $bookedRanges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // ── Fetch reviews for this property ──
+        $reviewStmt = $this->db->prepare(
+            "SELECT r.rating, r.comment, r.created_at,
+                    u.Name AS reviewer_name,
+                    COALESCE(r.cat_cleanliness, 0) AS cat_cleanliness,
+                    COALESCE(r.cat_comfort,     0) AS cat_comfort,
+                    COALESCE(r.cat_location,    0) AS cat_location,
+                    COALESCE(r.cat_value,       0) AS cat_value
+             FROM reviews r
+             JOIN User u ON r.user_id = u.User_Id
+             WHERE r.property_id = ?
+             ORDER BY r.created_at DESC
+             LIMIT 8"
+        );
+        $reviewStmt->execute([$id]);
+        $propertyReviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Aggregate stats
+        $reviewStats = ['count' => 0, 'avg' => 0.0, 'cats' => []];
+        try {
+            $avgStmt = $this->db->prepare(
+                "SELECT COUNT(*)               AS cnt,
+                        ROUND(AVG(rating), 1)  AS avg_rating,
+                        ROUND(AVG(NULLIF(COALESCE(cat_cleanliness,0),0)),1) AS avg_cleanliness,
+                        ROUND(AVG(NULLIF(COALESCE(cat_comfort,0),    0)),1) AS avg_comfort,
+                        ROUND(AVG(NULLIF(COALESCE(cat_location,0),   0)),1) AS avg_location,
+                        ROUND(AVG(NULLIF(COALESCE(cat_value,0),      0)),1) AS avg_value
+                 FROM reviews WHERE property_id = ?"
+            );
+            $avgStmt->execute([$id]);
+            $agg = $avgStmt->fetch(PDO::FETCH_ASSOC);
+            if ($agg && (int)$agg['cnt'] > 0) {
+                $reviewStats = [
+                    'count' => (int)$agg['cnt'],
+                    'avg'   => (float)$agg['avg_rating'],
+                    'cats'  => [
+                        'Cleanliness' => $agg['avg_cleanliness'],
+                        'Comfort'     => $agg['avg_comfort'],
+                        'Location'    => $agg['avg_location'],
+                        'Value'       => $agg['avg_value'],
+                    ],
+                ];
+            }
+        } catch (Exception $e) {
+            $reviewStats = ['count' => 0, 'avg' => 0.0, 'cats' => []];
+        }
 
         require_once __DIR__ . '/../views/User/book_property.php';
     }
@@ -304,6 +351,95 @@ class PropertyController {
 
         header("Location: index.php?action=my_bookings&success=updated");
         exit();
+    }
+
+    // ── Show review form ──────────────────────────────────────
+    public function showReview() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login"); exit();
+        }
+
+        $bookingId = intval($_GET['booking_id'] ?? 0);
+
+        // Verify booking belongs to user, is Confirmed OR Completed, checkout has passed, no review yet
+        $stmt = $this->db->prepare(
+            "SELECT b.Booking_Id, b.Check_In, b.Check_Out,
+                    p.Property_Id, p.Property_Name, p.image_path, p.Property_location
+             FROM Booking b
+             JOIN Property p ON b.Property_Id = p.Property_Id
+             LEFT JOIN reviews r ON r.booking_id = b.Booking_Id
+             WHERE b.Booking_Id = ?
+               AND b.User_Id = ?
+               AND b.Reservation_Status IN ('Confirmed', 'Completed')
+               AND b.Check_Out < CURDATE()
+               AND r.id IS NULL"
+        );
+        $stmt->execute([$bookingId, $_SESSION['user_id']]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            header("Location: index.php?action=my_bookings&error=review_ineligible"); exit();
+        }
+
+        $booking  = $row;
+        $property = ['Property_Id'       => $row['Property_Id'],
+                     'Property_Name'     => $row['Property_Name'],
+                     'image_path'        => $row['image_path'],
+                     'Property_location' => $row['Property_location']];
+
+        require_once __DIR__ . '/../views/User/review_property.php';
+    }
+
+    // ── Handle review submission ──────────────────────────────
+    public function submitReview() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login"); exit();
+        }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=my_bookings"); exit();
+        }
+
+        $bookingId  = intval($_POST['booking_id']  ?? 0);
+        $propertyId = intval($_POST['property_id'] ?? 0);
+        $rating     = intval($_POST['rating']       ?? 0);
+        $comment    = trim($_POST['comment']        ?? '');
+
+        // Clamp category ratings 0-5
+        $catCleanliness = min(5, max(0, intval($_POST['cat_cleanliness'] ?? 0)));
+        $catComfort     = min(5, max(0, intval($_POST['cat_comfort']     ?? 0)));
+        $catLocation    = min(5, max(0, intval($_POST['cat_location']    ?? 0)));
+        $catValue       = min(5, max(0, intval($_POST['cat_value']       ?? 0)));
+
+        if ($rating < 1 || $rating > 5) {
+            header("Location: index.php?action=review_property&booking_id={$bookingId}&error=no_rating"); exit();
+        }
+
+        // Re-verify eligibility server-side
+        $check = $this->db->prepare(
+            "SELECT b.Booking_Id FROM Booking b
+             LEFT JOIN reviews r ON r.booking_id = b.Booking_Id
+             WHERE b.Booking_Id = ? AND b.User_Id = ?
+               AND b.Reservation_Status IN ('Confirmed', 'Completed')
+               AND b.Check_Out < CURDATE()
+               AND r.id IS NULL"
+        );
+        $check->execute([$bookingId, $_SESSION['user_id']]);
+        if (!$check->fetch()) {
+            header("Location: index.php?action=my_bookings&error=review_ineligible"); exit();
+        }
+
+        $this->db->prepare(
+            "INSERT INTO reviews
+                 (booking_id, user_id, property_id, rating, comment,
+                  cat_cleanliness, cat_comfort, cat_location, cat_value)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        )->execute([
+            $bookingId, $_SESSION['user_id'], $propertyId,
+            $rating, $comment,
+            $catCleanliness, $catComfort, $catLocation, $catValue
+        ]);
+
+        header("Location: index.php?action=my_bookings&reviewed=1"); exit();
     }
 
     private function isValidDateRange(string $checkIn, string $checkOut): bool

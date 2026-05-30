@@ -4,6 +4,92 @@
     <meta charset="UTF-8">
     <title>EstateBook Admin | Dashboard</title>
     <link rel="stylesheet" href="assets/css/admin.css">
+<style>
+/* ── Broadcast Section ── */
+.broadcast-section { margin-bottom: 40px; }
+.broadcast-card {
+    background: #ffffff;
+    border: 1px solid #e4dccb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(0,31,63,0.06);
+}
+.broadcast-form-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+}
+.broadcast-icon-col {
+    padding: 28px 22px 28px 28px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 34px;
+}
+.broadcast-icon-wrap {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #001f3f, #003366);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 12px rgba(0,31,63,0.18);
+}
+.broadcast-input-col {
+    flex: 1;
+    padding: 24px 28px 24px 0;
+    border-left: 1px solid #f0ebe0;
+}
+.broadcast-label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #1e2a3a;
+    letter-spacing: 0.3px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+}
+.broadcast-textarea {
+    width: 100%;
+    border: 1.5px solid #e0d8c8;
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: #1e2a3a;
+    background: #fdfaf5;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.6;
+    outline: none;
+}
+.broadcast-textarea:focus {
+    border-color: #005f56;
+    box-shadow: 0 0 0 3px rgba(0,95,86,0.1);
+    background: #fff;
+}
+.broadcast-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    gap: 16px;
+}
+.broadcast-hint {
+    font-size: 0.75rem;
+    color: #9fa8b3;
+    flex: 1;
+}
+.broadcast-submit-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+</style>
 </head>
 <body>
 <?php $activePage = 'dashboard'; require __DIR__ . '/_sidebar.php'; ?>
@@ -27,6 +113,43 @@
     <?php elseif (isset($_GET['error'])): ?>
         <div class="alert alert-danger">✗ Something went wrong. Please try again.</div>
     <?php endif; ?>
+
+
+    <!-- ── Global Announcement Broadcast ── -->
+    <div class="broadcast-section">
+        <div class="section-header">
+            <h2>Global Announcement Broadcast</h2>
+            <span class="section-meta">Sends a message visible to all logged-in users</span>
+        </div>
+        <div class="broadcast-card">
+            <form action="index.php?action=broadcast_announcement" method="POST">
+                <div class="broadcast-form-body">
+                    <div class="broadcast-icon-col">
+                        <div class="broadcast-icon-wrap">📢</div>
+                    </div>
+                    <div class="broadcast-input-col">
+                        <label class="broadcast-label" for="broadcast_message">Compose Announcement</label>
+                        <textarea
+                            name="broadcast_message"
+                            id="broadcast_message"
+                            class="broadcast-textarea"
+                            placeholder="Type your announcement to all users here…"
+                            rows="4"
+                            maxlength="1000"
+                            oninput="document.getElementById('broadcastCharCount').textContent=this.value.length"
+                            required></textarea>
+                        <div class="broadcast-footer-row">
+                            <span class="broadcast-hint">Replaces the current pinned announcement instantly. &nbsp;<span id="broadcastCharCount" style="font-weight:600;color:#005f56">0</span>/1000</span>
+                            <button type="submit" class="btn btn-primary broadcast-submit-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                Broadcast
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Stats -->
     <div class="stats-grid">

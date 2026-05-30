@@ -421,3 +421,36 @@ body {
     cursor: not-allowed;
     border: 1px solid #d9cfba;
 }
+
+/* ═══════════════════════════════════════════════
+   LUXURY-THEME OVERRIDE — dashboard.css
+   Restores correct colors for nav items, profile
+   button, dropdown, and property card buttons.
+   ═══════════════════════════════════════════════ */
+
+/* Nav items */
+.nav-item                   { color: #2f3a49 !important; }
+.nav-item:hover             { color: #1e2a3a !important; }
+.nav-item.active            { color: var(--primary) !important; }
+
+/* Profile button & name */
+.profile-btn                { color: #2f3a49 !important; }
+.profile-btn:hover          { color: #1e2a3a !important; }
+.profile-name               { color: #2f3a49 !important; }
+
+/* Dropdown menu links */
+.dropdown-menu a                    { color: #2f3a49 !important; text-decoration: none !important; }
+.dropdown-menu a:hover              { color: #1e2a3a !important; }
+.dropdown-logout-link               { color: #e74c3c !important; }
+.dropdown-logout-link:hover         { color: #c0392b !important; }
+.dropdown-profile-name              { color: #1e2a3a !important; }
+.dropdown-profile-email             { color: #6b7685 !important; }
+
+/* Property card reserve button */
+.btn-view                   { color: #ffffff !important; }
+.btn-view:hover             { color: #ffffff !important; background: #004d46 !important; }
+
+/* Card rate text */
+.card-rate                  { color: var(--primary) !important; }
+.card-title                 { color: #1e2a3a !important; }
+.card-loc                   { color: #6b7685 !important; }

@@ -9,6 +9,7 @@ body div {
 
 .logo-clickable {
     cursor: pointer;
+    color: aquamarine;
 }
 
 .search-divider {

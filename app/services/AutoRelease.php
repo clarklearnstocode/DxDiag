@@ -62,6 +62,37 @@ class AutoRelease
                  WHERE  Booking_Id IN ($ph)"
             )->execute($bookingIds);
 
+            // ── Fire "please leave a review" notifications (once per booking) ──
+            $notifStmt = $this->db->prepare("
+                SELECT b.Booking_Id, b.User_Id, p.Property_Name
+                FROM   Booking b
+                JOIN   Property p ON p.Property_Id = b.Property_Id
+                WHERE  b.Booking_Id IN ($ph)
+            ");
+            $notifStmt->execute($bookingIds);
+            $completedRows = $notifStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $dupCheck = $this->db->prepare("
+                SELECT COUNT(*) FROM notifications
+                WHERE  user_id = ?
+                  AND  message LIKE CONCAT('%booking_ref:', ?, '%')
+            ");
+            $insertNotif = $this->db->prepare("
+                INSERT INTO notifications (user_id, message)
+                VALUES (?, ?)
+            ");
+
+            foreach ($completedRows as $row) {
+                // Deduplicate: only send once per booking
+                $dupCheck->execute([(int)$row['User_Id'], (int)$row['Booking_Id']]);
+                if ((int)$dupCheck->fetchColumn() > 0) continue;
+
+                $msg = "Thank you for your recent stay at {$row['Property_Name']}! "
+                     . "Please leave a review to share your elite experience with other travelers. "
+                     . "[booking_ref:{$row['Booking_Id']}]";
+                $insertNotif->execute([(int)$row['User_Id'], $msg]);
+            }
+
             // ── Release each property only if no other booking is still active ──
             foreach ($propertyIds as $propId) {
                 $check = $this->db->prepare("

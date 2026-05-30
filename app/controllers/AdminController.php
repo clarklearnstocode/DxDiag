@@ -18,6 +18,14 @@ class AdminController {
         }
     }
 
+    // ── Insert a user notification ──
+    private function insertNotification(int $userId, string $message): void {
+        $stmt = $this->db->prepare(
+            "INSERT INTO notifications (user_id, message) VALUES (?, ?)"
+        );
+        $stmt->execute([$userId, $message]);
+    }
+
     public function showLogin() {
         if (!empty($_SESSION['admin_logged_in']) && !empty($_SESSION['admin_id'])) {
             header("Location: index.php?action=admin_dashboard");
@@ -44,7 +52,6 @@ class AdminController {
         if ($admin_user && $validPassword) {
             session_regenerate_id(true);
 
-            // Always persist core admin identity immediately after successful credentials.
             $_SESSION['admin_id']   = (int)$admin_user['Admin_Id'];
             $_SESSION['admin_name'] = $admin_user['Admin_Name'];
 
@@ -52,7 +59,6 @@ class AdminController {
             $totpSecret  = trim((string)($admin_user['totp_secret'] ?? ''));
 
             if ($totpEnabled && $totpSecret !== '') {
-                // Require 2FA only when it is already configured.
                 $_SESSION['admin_logged_in'] = false;
                 $_SESSION['2fa_pending_admin'] = [
                     'id'           => (int)$admin_user['Admin_Id'],
@@ -62,7 +68,6 @@ class AdminController {
                 ];
                 header("Location: index.php?action=verify_totp&role=admin");
             } else {
-                // Fallback for environments where admin TOTP is not set up yet.
                 $_SESSION['admin_logged_in'] = true;
                 unset($_SESSION['2fa_pending_admin']);
                 header("Location: index.php?action=admin_dashboard");
@@ -86,6 +91,21 @@ class AdminController {
         require_once __DIR__ . '/../views/Admin/admin_dashboard.php';
     }
 
+    // ── ANNOUNCEMENT BROADCAST ──
+    public function handleBroadcast() {
+        $this->requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=admin_dashboard"); exit();
+        }
+        $message = trim($_POST['broadcast_message'] ?? '');
+        if ($message !== '') {
+            $stmt = $this->db->prepare("INSERT INTO announcements (message) VALUES (?)");
+            $stmt->execute([$message]);
+        }
+        header("Location: index.php?action=admin_dashboard&success=broadcast");
+        exit();
+    }
+
     // ── ADD PROPERTY ──
     public function showAddProperty() {
         $this->requireAdmin();
@@ -98,7 +118,6 @@ class AdminController {
             header("Location: index.php?action=add_property"); exit();
         }
 
-        // Use IMG_PATH constant (defined in index.php, always points to public/assets/img/)
         $image_name = 'villa1.png';
         if (!empty($_FILES['property_image']['name']) && $_FILES['property_image']['error'] === UPLOAD_ERR_OK) {
             $original    = basename($_FILES['property_image']['name']);
@@ -165,7 +184,6 @@ class AdminController {
         $description = trim($_POST['description']   ?? '');
         $status      = trim($_POST['status']         ?? 'Available');
 
-        // Handle optional new image upload
         $image_name = trim($_POST['current_image']  ?? 'villa1.png');
         if (!empty($_FILES['property_image']['name']) && $_FILES['property_image']['error'] === UPLOAD_ERR_OK) {
             $original    = basename($_FILES['property_image']['name']);
@@ -202,7 +220,6 @@ class AdminController {
     // ── DELETE PROPERTY ──
     public function deleteProperty($id) {
         $this->requireAdmin();
-        // Remove from DB (bookings cascade by FK if set, or we handle gracefully)
         $stmt = $this->db->prepare("DELETE FROM Property WHERE Property_Id = ?");
         $stmt->execute([$id]);
         header("Location: index.php?action=admin_dashboard&success=deleted");
@@ -237,13 +254,29 @@ class AdminController {
             header("Location: index.php?action=reservations&error=invalid"); exit();
         }
 
+        // Fetch booking details for notification message
+        $infoStmt = $this->db->prepare(
+            "SELECT b.User_Id, p.Property_Name
+             FROM Booking b
+             JOIN Property p ON b.Property_Id = p.Property_Id
+             WHERE b.Booking_Id = ?"
+        );
+        $infoStmt->execute([$bookingId]);
+        $bookingInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
+
+        // Update booking status — properties stay Available (non-blocking model)
         $stmt = $this->db->prepare("UPDATE Booking SET Reservation_Status = ? WHERE Booking_Id = ?");
         $stmt->execute([$newStatus, $bookingId]);
 
-        if ($newStatus === 'Confirmed') {
-            $this->db->prepare("UPDATE Property SET Status = 'Occupied' WHERE Property_Id = (SELECT Property_Id FROM Booking WHERE Booking_Id = ?)")->execute([$bookingId]);
-        } elseif ($newStatus === 'Rejected') {
-            $this->db->prepare("UPDATE Property SET Status = 'Available' WHERE Property_Id = (SELECT Property_Id FROM Booking WHERE Booking_Id = ?)")->execute([$bookingId]);
+        // Fire notification to the user
+        if ($bookingInfo) {
+            $propName = $bookingInfo['Property_Name'];
+            $userId   = (int)$bookingInfo['User_Id'];
+            if ($newStatus === 'Confirmed') {
+                $this->insertNotification($userId, "Your reservation for {$propName} has been Approved!");
+            } elseif ($newStatus === 'Rejected') {
+                $this->insertNotification($userId, "Your reservation for {$propName} has been Rejected.");
+            }
         }
 
         $from = $_GET['from'] ?? '';
@@ -255,8 +288,28 @@ class AdminController {
 
     public function approveBooking($id) {
         $this->requireAdmin();
-        $this->db->prepare("UPDATE Booking SET Reservation_Status = 'Confirmed' WHERE Booking_Id = ?")->execute([$id]);
-        $this->db->prepare("UPDATE Property SET Status = 'Occupied' WHERE Property_Id = (SELECT Property_Id FROM Booking WHERE Booking_Id = ?)")->execute([$id]);
+
+        // Fetch booking info for notification
+        $infoStmt = $this->db->prepare(
+            "SELECT b.User_Id, p.Property_Name
+             FROM Booking b
+             JOIN Property p ON b.Property_Id = p.Property_Id
+             WHERE b.Booking_Id = ?"
+        );
+        $infoStmt->execute([$id]);
+        $bookingInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
+
+        $this->db->prepare("UPDATE Booking SET Reservation_Status = 'Confirmed' WHERE Booking_Id = ?")
+                 ->execute([$id]);
+
+        // Notify user — property stays Available (non-blocking model)
+        if ($bookingInfo) {
+            $this->insertNotification(
+                (int)$bookingInfo['User_Id'],
+                "Your reservation for {$bookingInfo['Property_Name']} has been Approved!"
+            );
+        }
+
         header("Location: index.php?action=reservations&success=confirmed");
         exit();
     }

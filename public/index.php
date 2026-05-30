@@ -4,8 +4,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Inject global theme stylesheet into all rendered HTML views.
-ob_start(function ($buffer) {
+// Determine the routing action early so the output buffer can analyze it
+$action = isset($_GET['action']) ? $_GET['action'] : 'home';
+
+// Inject global theme stylesheet into views EXCEPT the clean landing screen
+ob_start(function ($buffer) use ($action) {
+    // Completely isolate home and landing paths from core theme overrides
+    if ($action === 'home' || $action === 'landing') {
+        return $buffer;
+    }
+    
     if (stripos($buffer, '</head>') !== false && stripos($buffer, 'assets/css/luxury-theme.css') === false) {
         $themeLink = '<link rel="stylesheet" href="assets/css/luxury-theme.css?v=1">' . "\n";
         return preg_replace('/<\/head>/i', $themeLink . '</head>', $buffer, 1);
@@ -14,7 +22,6 @@ ob_start(function ($buffer) {
 });
 
 // Define reliable absolute paths for file uploads
-// __DIR__ = .../public  (the folder index.php lives in)
 define('BASE_PATH',   __DIR__);
 define('IMG_PATH',    __DIR__ . '/assets/img/');
 define('UPLOAD_PATH', __DIR__ . '/assets/img/uploads/');
@@ -31,23 +38,18 @@ require_once __DIR__ . '/../app/controllers/AdminController.php';
 require_once __DIR__ . '/../app/controllers/BookingController.php';
 
 // 3. Auto-release expired bookings on every page load
-//    This is the mechanism that makes properties automatically
-//    go back to "Available" once a booking's check-out time passes.
 require_once __DIR__ . '/../app/services/AutoRelease.php';
 require_once __DIR__ . '/../config/Database.php';
 $_autoDb      = (new Database())->getConnection();
 $_autoRelease = new AutoRelease($_autoDb);
 $_autoRelease->run();
-unset($_autoDb, $_autoRelease);   // clean up — controllers open their own connections
+unset($_autoDb, $_autoRelease);   
 
-// 3. Initialize Controllers
+// 4. Initialize Controllers
 $controller = new PropertyController();
 $auth       = new AuthController();
 $admin      = new AdminController();
 $booking    = new BookingController();
-
-// 4. Determine Action
-$action = isset($_GET['action']) ? $_GET['action'] : 'home';
 
 switch ($action) {
     /* --- USER ROUTES --- */
@@ -80,7 +82,7 @@ switch ($action) {
 
     case 'register':
     case 'signup':
-        $auth->showSignup();   // loads register.php
+        $auth->showSignup();   
         break;
 
     case 'handleSignup':
@@ -171,7 +173,6 @@ switch ($action) {
         $admin->handleAddProperty();
         break;
 
-    // NEW: Edit property page
     case 'edit_property':
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $admin->handleEditProperty();
@@ -181,7 +182,6 @@ switch ($action) {
         }
         break;
 
-    // NEW: Delete property
     case 'delete_property':
         if (isset($_GET['id'])) {
             $admin->deleteProperty(intval($_GET['id']));
@@ -215,6 +215,34 @@ switch ($action) {
         if (isset($_GET['id'])) {
             $admin->deleteUser($_GET['id']);
         }
+        break;
+
+
+    case 'broadcast_announcement':
+        $admin->handleBroadcast();
+        break;
+
+    case 'get_notifications':
+        header('Content-Type: application/json');
+        $auth->getNotifications();
+        break;
+
+    case 'mark_notifications_read':
+        header('Content-Type: application/json');
+        $auth->markNotificationsRead();
+        break;
+
+    case 'pending_count':
+        header('Content-Type: application/json');
+        $auth->getPendingCount();
+        break;
+
+    case 'review_property':
+        $controller->showReview();
+        break;
+
+    case 'submit_review':
+        $controller->submitReview();
         break;
 
     /* --- DEFAULT --- */
