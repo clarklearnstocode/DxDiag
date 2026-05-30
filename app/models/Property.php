@@ -1,7 +1,7 @@
 <?php
 class Property {
     private $conn;
-    private $table_name = "Property";
+    private $table_name = "property"; // Changed to lowercase to fix Linux error 1146
 
     // Object properties
     public $Property_Id;
@@ -56,5 +56,5 @@ class Property {
         $stmt->execute();
         return $stmt;
     }
-
 }
+?>
