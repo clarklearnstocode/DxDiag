@@ -32,7 +32,7 @@ class AuthController {
         $userId = (int)$_SESSION['user_id'];
 
         // All properties — always shown regardless of Status
-        $stmt       = $this->db->query("SELECT * FROM Property ORDER BY Property_Id DESC");
+        $stmt       = $this->db->query("SELECT * FROM property ORDER BY Property_Id DESC");
         $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // ── Feature 2: Upcoming booking countdown ──
@@ -40,8 +40,8 @@ class AuthController {
         $upcomingStmt = $this->db->prepare(
             "SELECT b.Booking_Id, b.Check_In, b.Check_Out,
                     p.Property_Name, p.image_path
-             FROM Booking b
-             JOIN Property p ON b.Property_Id = p.Property_Id
+             FROM booking b
+             JOIN property p ON b.Property_Id = p.Property_Id
              WHERE b.User_Id = ?
                AND b.Reservation_Status = 'Confirmed'
                AND b.Check_In >= CURDATE()
@@ -111,9 +111,9 @@ class AuthController {
                         p.Property_Name, p.Property_location, p.image_path,
                         pay.Amount,
                         IF(r.id IS NOT NULL, 1, 0) AS has_review
-                 FROM Booking b
-                 JOIN Property p ON b.Property_Id = p.Property_Id
-                 LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                 FROM booking b
+                 JOIN property p ON b.Property_Id = p.Property_Id
+                 LEFT JOIN payment pay ON b.Payment_Id = pay.Payment_Id
                  LEFT JOIN reviews r   ON r.booking_id = b.Booking_Id
                  WHERE b.User_Id = ?
                    AND b.Reservation_Status IN ('Confirmed', 'Completed')
@@ -178,7 +178,7 @@ class AuthController {
         }
         try {
             $count = (int)$this->db->query(
-                "SELECT COUNT(*) FROM Booking WHERE Reservation_Status = 'Pending'"
+                "SELECT COUNT(*) FROM booking WHERE Reservation_Status = 'Pending'"
             )->fetchColumn();
             echo json_encode(['count' => $count]);
         } catch (Exception $e) {
@@ -193,7 +193,7 @@ class AuthController {
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?action=login"); exit();
         }
-        $stmt = $this->db->prepare("SELECT * FROM User WHERE User_Id = ? LIMIT 1");
+        $stmt = $this->db->prepare("SELECT * FROM user WHERE User_Id = ? LIMIT 1");
         $stmt->execute([$_SESSION['user_id']]);
         $userData = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($userData) {
@@ -218,7 +218,7 @@ class AuthController {
         $newPw  = $_POST['new_password']     ?? '';
         $conPw  = $_POST['confirm_password'] ?? '';
 
-        $stmt = $this->db->prepare("SELECT User_Id FROM User WHERE Email = ? AND User_Id != ?");
+        $stmt = $this->db->prepare("SELECT User_Id FROM user WHERE Email = ? AND User_Id != ?");
         $stmt->execute([$email, $userId]);
         if ($stmt->fetch()) {
             header("Location: index.php?action=profile&error=email_taken"); exit();
@@ -241,7 +241,7 @@ class AuthController {
 
         $newHashedPw = null;
         if (!empty($newPw)) {
-            $stmt = $this->db->prepare("SELECT Password FROM User WHERE User_Id = ?");
+            $stmt = $this->db->prepare("SELECT Password FROM user WHERE User_Id = ?");
             $stmt->execute([$userId]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$row || !password_verify($curPw, $row['Password'])) {
@@ -258,7 +258,7 @@ class AuthController {
         if ($newImage)     { $fields .= ", profile_image = ?"; $params[] = $newImage; }
         $params[] = $userId;
 
-        $this->db->prepare("UPDATE User SET {$fields} WHERE User_Id = ?")->execute($params);
+        $this->db->prepare("UPDATE user SET {$fields} WHERE User_Id = ?")->execute($params);
 
         $_SESSION['user_name']  = $name;
         $_SESSION['user_email'] = $email;
@@ -280,9 +280,9 @@ class AuthController {
                     p.Property_Name, p.Property_location, p.image_path,
                     pay.Amount, pay.Payment_Method,
                     IF(r.id IS NOT NULL, 1, 0) AS has_review
-                  FROM Booking b
-                  JOIN Property p    ON b.Property_Id  = p.Property_Id
-                  LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                  FROM booking b
+                  JOIN property p    ON b.Property_Id  = p.Property_Id
+                  LEFT JOIN payment pay ON b.Payment_Id = pay.Payment_Id
                   LEFT JOIN reviews r   ON r.booking_id = b.Booking_Id
                   WHERE b.User_Id = ?
                   ORDER BY b.Booking_Id DESC";
@@ -314,7 +314,7 @@ class AuthController {
             header("Location: index.php?action=signup&error=weak_password"); exit();
         }
 
-        $check = $this->db->prepare("SELECT User_Id FROM User WHERE Email = ? OR Username = ?");
+        $check = $this->db->prepare("SELECT User_Id FROM user WHERE Email = ? OR Username = ?");
         $check->execute([$email, $username]);
         if ($check->fetch()) {
             header("Location: index.php?action=signup&error=taken"); exit();
@@ -322,7 +322,7 @@ class AuthController {
 
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $this->db->prepare(
-            "INSERT INTO User (Name, Username, Email, Phone, Password) VALUES (?,?,?,?,?)"
+            "INSERT INTO user (Name, Username, Email, Phone, Password) VALUES (?,?,?,?,?)"
         )->execute([$name, $username, $email, $phone, $hash]);
 
         header("Location: index.php?action=login&registered=1"); exit();
@@ -414,11 +414,11 @@ class AuthController {
         $pending = $_SESSION[$pendingKey];
         if ($role === 'admin') {
             $this->db->prepare(
-                "UPDATE Admin SET totp_secret = ?, totp_enabled = 1 WHERE Admin_Id = ?"
+                "UPDATE admin SET totp_secret = ?, totp_enabled = 1 WHERE Admin_Id = ?"
             )->execute([$secret, $pending['id']]);
         } else {
             $this->db->prepare(
-                "UPDATE User SET totp_secret = ?, totp_enabled = 1 WHERE User_Id = ?"
+                "UPDATE user SET totp_secret = ?, totp_enabled = 1 WHERE User_Id = ?"
             )->execute([$secret, $pending['id']]);
         }
 

@@ -58,7 +58,7 @@ class AutoRelease
             // ── Mark bookings as Completed ──
             $ph = implode(',', array_fill(0, count($bookingIds), '?'));
             $this->db->prepare(
-                "UPDATE Booking SET Reservation_Status = 'Completed'
+                "UPDATE booking SET Reservation_Status = 'Completed'
                  WHERE  Booking_Id IN ($ph)"
             )->execute($bookingIds);
 
@@ -96,7 +96,7 @@ class AutoRelease
             // ── Release each property only if no other booking is still active ──
             foreach ($propertyIds as $propId) {
                 $check = $this->db->prepare("
-                    SELECT COUNT(*) FROM Booking
+                    SELECT COUNT(*) FROM booking
                     WHERE  Property_Id = ?
                       AND  Reservation_Status = 'Confirmed'
                       AND  TIMESTAMP(
@@ -108,7 +108,7 @@ class AutoRelease
 
                 if ($check->fetchColumn() == 0) {
                     $this->db->prepare(
-                        "UPDATE Property SET Status = 'Available' WHERE Property_Id = ?"
+                        "UPDATE property SET Status = 'Available' WHERE Property_Id = ?"
                     )->execute([$propId]);
                 }
             }

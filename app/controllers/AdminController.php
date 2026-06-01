@@ -38,7 +38,7 @@ class AdminController {
         $username = $_POST['username'] ?? '';
         $passcode = $_POST['passcode'] ?? '';
 
-        $query = "SELECT * FROM Admin WHERE Username = ? LIMIT 1";
+        $query = "SELECT * FROM admin WHERE Username = ? LIMIT 1";
         $stmt  = $this->db->prepare($query);
         $stmt->execute([$username]);
         $admin_user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -82,10 +82,10 @@ class AdminController {
     public function showDashboard() {
         $this->requireAdmin();
 
-        $propCount         = $this->db->query("SELECT COUNT(*) FROM Property")->fetchColumn();
-        $bookCount         = $this->db->query("SELECT COUNT(*) FROM Booking")->fetchColumn();
-        $revenue           = $this->db->query("SELECT SUM(Amount) FROM Payment WHERE Status = 'Paid'")->fetchColumn();
-        $stmt              = $this->db->query("SELECT * FROM Property ORDER BY Property_Id DESC");
+        $propCount         = $this->db->query("SELECT COUNT(*) FROM property")->fetchColumn();
+        $bookCount         = $this->db->query("SELECT COUNT(*) FROM booking")->fetchColumn();
+        $revenue           = $this->db->query("SELECT SUM(Amount) FROM payment WHERE Status = 'Paid'")->fetchColumn();
+        $stmt              = $this->db->query("SELECT * FROM property ORDER BY Property_Id DESC");
         $recent_properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         require_once __DIR__ . '/../views/Admin/admin_dashboard.php';
@@ -137,7 +137,7 @@ class AdminController {
         $has_pool    = isset($_POST['has_pool'])     ? 1 : 0;
         $description = trim($_POST['description']   ?? '');
 
-        $sql  = "INSERT INTO Property
+        $sql  = "INSERT INTO property
                      (Property_Name, Property_location, Property_rate, Property_size,
                       Property_bathrooms, Property_capacity, Has_pool,
                       Property_Description, Status, image_path)
@@ -156,7 +156,7 @@ class AdminController {
     // ── EDIT PROPERTY ──
     public function showEditProperty($id) {
         $this->requireAdmin();
-        $stmt = $this->db->prepare("SELECT * FROM Property WHERE Property_Id = ? LIMIT 1");
+        $stmt = $this->db->prepare("SELECT * FROM property WHERE Property_Id = ? LIMIT 1");
         $stmt->execute([$id]);
         $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -194,7 +194,7 @@ class AdminController {
             }
         }
 
-        $sql  = "UPDATE Property SET
+        $sql  = "UPDATE property SET
                      Property_Name        = ?,
                      Property_location    = ?,
                      Property_rate        = ?,
@@ -220,7 +220,7 @@ class AdminController {
     // ── DELETE PROPERTY ──
     public function deleteProperty($id) {
         $this->requireAdmin();
-        $stmt = $this->db->prepare("DELETE FROM Property WHERE Property_Id = ?");
+        $stmt = $this->db->prepare("DELETE FROM property WHERE Property_Id = ?");
         $stmt->execute([$id]);
         header("Location: index.php?action=admin_dashboard&success=deleted");
         exit();
@@ -232,10 +232,10 @@ class AdminController {
 
         $query = "SELECT b.*, u.Name, p.Property_Name, p.Property_rate, p.image_path,
                          pay.Amount, pay.Payment_Method
-                  FROM Booking b
-                  JOIN User u ON b.User_Id = u.User_Id
-                  JOIN Property p ON b.Property_Id = p.Property_Id
-                  LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                  FROM booking b
+                  JOIN user u ON b.User_Id = u.User_Id
+                  JOIN property p ON b.Property_Id = p.Property_Id
+                  LEFT JOIN payment pay ON b.Payment_Id = pay.Payment_Id
                   ORDER BY b.Booking_Id DESC";
         $stmt = $this->db->query($query);
         $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -257,15 +257,15 @@ class AdminController {
         // Fetch booking details for notification message
         $infoStmt = $this->db->prepare(
             "SELECT b.User_Id, p.Property_Name
-             FROM Booking b
-             JOIN Property p ON b.Property_Id = p.Property_Id
+             FROM booking b
+             JOIN property p ON b.Property_Id = p.Property_Id
              WHERE b.Booking_Id = ?"
         );
         $infoStmt->execute([$bookingId]);
         $bookingInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
 
         // Update booking status — properties stay Available (non-blocking model)
-        $stmt = $this->db->prepare("UPDATE Booking SET Reservation_Status = ? WHERE Booking_Id = ?");
+        $stmt = $this->db->prepare("UPDATE booking SET Reservation_Status = ? WHERE Booking_Id = ?");
         $stmt->execute([$newStatus, $bookingId]);
 
         // Fire notification to the user
@@ -292,14 +292,14 @@ class AdminController {
         // Fetch booking info for notification
         $infoStmt = $this->db->prepare(
             "SELECT b.User_Id, p.Property_Name
-             FROM Booking b
-             JOIN Property p ON b.Property_Id = p.Property_Id
+             FROM booking b
+             JOIN property p ON b.Property_Id = p.Property_Id
              WHERE b.Booking_Id = ?"
         );
         $infoStmt->execute([$id]);
         $bookingInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
 
-        $this->db->prepare("UPDATE Booking SET Reservation_Status = 'Confirmed' WHERE Booking_Id = ?")
+        $this->db->prepare("UPDATE booking SET Reservation_Status = 'Confirmed' WHERE Booking_Id = ?")
                  ->execute([$id]);
 
         // Notify user — property stays Available (non-blocking model)
@@ -320,10 +320,10 @@ class AdminController {
         $query = "SELECT b.*, u.Name, u.Email, u.Phone,
                          p.Property_Name, p.Property_location, p.Property_rate, p.image_path,
                          pay.Payment_Method, pay.Amount, pay.Status AS Payment_Status
-                  FROM Booking b
-                  JOIN User u ON b.User_Id = u.User_Id
-                  JOIN Property p ON b.Property_Id = p.Property_Id
-                  LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+                  FROM booking b
+                  JOIN user u ON b.User_Id = u.User_Id
+                  JOIN property p ON b.Property_Id = p.Property_Id
+                  LEFT JOIN payment pay ON b.Payment_Id = pay.Payment_Id
                   WHERE b.Booking_Id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->execute([$id]);
@@ -338,13 +338,13 @@ class AdminController {
     // ── USER MANAGEMENT ──
     public function showUserManagement() {
         $this->requireAdmin();
-        $users = $this->db->query("SELECT * FROM User ORDER BY User_Id DESC")->fetchAll(PDO::FETCH_ASSOC);
+        $users = $this->db->query("SELECT * FROM user ORDER BY User_Id DESC")->fetchAll(PDO::FETCH_ASSOC);
         require_once __DIR__ . '/../views/Admin/user_management.php';
     }
 
     public function deleteUser($id) {
         $this->requireAdmin();
-        $this->db->prepare("DELETE FROM User WHERE User_Id = ?")->execute([$id]);
+        $this->db->prepare("DELETE FROM user WHERE User_Id = ?")->execute([$id]);
         header("Location: index.php?action=user_management&success=deleted");
         exit();
     }

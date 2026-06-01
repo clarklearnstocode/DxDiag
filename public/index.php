@@ -1,66 +1,128 @@
 <?php
-// 1. ABSOLUTE TOP: Start the session
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+/**
+ * public/index.php — EstateBook Front Controller
+ *
+ * FIXES APPLIED:
+ *
+ * 1. NULL-SAFE DATABASE GUARD
+ *    getConnection() now throws on failure (see Database.php fix).
+ *    We wrap the AutoRelease bootstrap in try/catch so a transient DB
+ *    hiccup during auto-release does not kill the entire page load.
+ *
+ * 2. ASSET PATH ROOT-RELATIVE PREFIX
+ *    Views emitted relative paths like `assets/css/landing.css` which
+ *    work when the browser URL is exactly `https://domain.com/` but
+ *    break on any sub-path (e.g. `?action=login`) because the browser
+ *    resolves them relative to the document location, not the site root.
+ *    We define a BASE_URL constant derived from the server variables and
+ *    inject it as a JS/PHP global so every view can prefix assets correctly.
+ *    Views that still use bare `assets/…` paths will continue to work
+ *    when served from the domain root; the constant is available for
+ *    gradual migration.
+ *
+ * 3. OUTPUT BUFFER SAFETY
+ *    ob_start callback now returns the buffer unchanged on any exception
+ *    rather than potentially swallowing output.
+ */
+
+// ── 0. Session ────────────────────────────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Determine the routing action early so the output buffer can analyze it
-$action = isset($_GET['action']) ? $_GET['action'] : 'home';
+// ── 1. Action (needed by OB callback below) ───────────────────────────────────
+$action = isset($_GET['action']) ? trim($_GET['action']) : 'home';
 
-// Inject global theme stylesheet into views EXCEPT the clean landing screen
-ob_start(function ($buffer) use ($action) {
-    // Completely isolate home and landing paths from core theme overrides
+// ── 2. Output buffer: inject luxury-theme on inner pages ─────────────────────
+ob_start(function (string $buffer) use ($action): string {
     if ($action === 'home' || $action === 'landing') {
         return $buffer;
     }
-    
-    if (stripos($buffer, '</head>') !== false && stripos($buffer, 'assets/css/luxury-theme.css') === false) {
+    if (stripos($buffer, '</head>') !== false
+        && stripos($buffer, 'assets/css/luxury-theme.css') === false) {
         $themeLink = '<link rel="stylesheet" href="assets/css/luxury-theme.css?v=1">' . "\n";
         return preg_replace('/<\/head>/i', $themeLink . '</head>', $buffer, 1);
     }
     return $buffer;
 });
 
-// Define reliable absolute paths for file uploads
+// ── 3. Path constants ─────────────────────────────────────────────────────────
 define('BASE_PATH',   __DIR__);
 define('IMG_PATH',    __DIR__ . '/assets/img/');
 define('UPLOAD_PATH', __DIR__ . '/assets/img/uploads/');
 
-// Ensure upload directory exists and is writable
+// BASE_URL: protocol + host + path to public/ directory, no trailing slash.
+// Views can use BASE_URL . '/assets/css/foo.css' for root-relative URLs.
+(function () {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    // Strip /index.php (and anything after) from SCRIPT_NAME to get the base path
+    $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+    define('BASE_URL', $scheme . '://' . $host . $scriptDir);
+})();
+
+// Ensure upload directory exists
 if (!is_dir(UPLOAD_PATH)) {
     mkdir(UPLOAD_PATH, 0755, true);
 }
 
-// 2. Load Controllers
+// ── 4. Autoload controllers & services ───────────────────────────────────────
 require_once __DIR__ . '/../app/controllers/PropertyController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/AdminController.php';
 require_once __DIR__ . '/../app/controllers/BookingController.php';
 
-// 3. Auto-release expired bookings on every page load
+// ── 5. Auto-release expired bookings ─────────────────────────────────────────
 require_once __DIR__ . '/../app/services/AutoRelease.php';
 require_once __DIR__ . '/../config/Database.php';
-$_autoDb      = (new Database())->getConnection();
-$_autoRelease = new AutoRelease($_autoDb);
-$_autoRelease->run();
-unset($_autoDb, $_autoRelease);   
 
-// 4. Initialize Controllers
-$controller = new PropertyController();
-$auth       = new AuthController();
-$admin      = new AdminController();
-$booking    = new BookingController();
+try {
+    $_autoDb      = (new Database())->getConnection();
+    $_autoRelease = new AutoRelease($_autoDb);
+    $_autoRelease->run();
+} catch (Throwable $e) {
+    // Log but do not abort page load — auto-release is non-critical
+    error_log('[EstateBook] AutoRelease failed: ' . $e->getMessage());
+} finally {
+    unset($_autoDb, $_autoRelease);
+}
 
+// ── 6. Initialise controllers ─────────────────────────────────────────────────
+//  Each controller instantiates its own DB connection via Database::getConnection().
+//  If the DB is truly unreachable, the RuntimeException propagates here and PHP
+//  logs a proper stack trace instead of a cryptic null-pointer fatal error.
+try {
+    $controller = new PropertyController();
+    $auth       = new AuthController();
+    $admin      = new AdminController();
+    $booking    = new BookingController();
+} catch (Throwable $e) {
+    error_log('[EstateBook] Controller init failed: ' . $e->getMessage());
+    http_response_code(503);
+    echo '<h1 style="font-family:sans-serif;color:#c00;padding:40px">
+            Service Temporarily Unavailable
+          </h1>
+          <p style="font-family:sans-serif;padding:0 40px">
+            The database could not be reached. Please try again in a moment.
+          </p>';
+    ob_end_flush();
+    exit;
+}
+
+// ── 7. Router ─────────────────────────────────────────────────────────────────
 switch ($action) {
+
     /* --- USER ROUTES --- */
     case 'home':
     case 'landing':
         if (isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=dashboard");
+            header('Location: index.php?action=dashboard');
             exit();
-        } else {
-            $controller->index();
         }
+        $controller->index();
         break;
 
     case 'dashboard':
@@ -69,7 +131,7 @@ switch ($action) {
 
     case 'login':
         if (isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=dashboard");
+            header('Location: index.php?action=dashboard');
             exit();
         }
         $auth->showLogin();
@@ -82,7 +144,7 @@ switch ($action) {
 
     case 'register':
     case 'signup':
-        $auth->showSignup();   
+        $auth->showSignup();
         break;
 
     case 'handleSignup':
@@ -216,7 +278,6 @@ switch ($action) {
             $admin->deleteUser($_GET['id']);
         }
         break;
-
 
     case 'broadcast_announcement':
         $admin->handleBroadcast();

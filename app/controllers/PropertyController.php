@@ -31,7 +31,7 @@ class PropertyController {
 
         // Fetch active bookings for calendar availability
         $sql = "SELECT Booking_Id, Check_In, Check_Out
-                FROM Booking
+                FROM booking
                 WHERE Property_Id = ?
                   AND Reservation_Status IN ('Pending', 'Confirmed')
                   AND Check_Out >= CURDATE()
@@ -49,7 +49,7 @@ class PropertyController {
                     COALESCE(r.cat_location,    0) AS cat_location,
                     COALESCE(r.cat_value,       0) AS cat_value
              FROM reviews r
-             JOIN User u ON r.user_id = u.User_Id
+             JOIN user u ON r.user_id = u.User_Id
              WHERE r.property_id = ?
              ORDER BY r.created_at DESC
              LIMIT 8"
@@ -121,7 +121,7 @@ class PropertyController {
 
         // Server-side date overlap check
         $overlapStmt = $this->db->prepare(
-            "SELECT COUNT(*) FROM Booking
+            "SELECT COUNT(*) FROM booking
              WHERE Property_Id = ?
                AND Reservation_Status IN ('Pending', 'Confirmed')
                AND Check_In < ? AND Check_Out > ?"
@@ -190,9 +190,9 @@ class PropertyController {
         $stmt = $this->db->prepare(
             "SELECT b.*, p.Property_Name, p.Property_location, p.Property_rate,
                     p.image_path, pay.Payment_Method, pay.Amount
-             FROM Booking b
-             JOIN Property p  ON b.Property_Id  = p.Property_Id
-             LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+             FROM booking b
+             JOIN property p  ON b.Property_Id  = p.Property_Id
+             LEFT JOIN payment pay ON b.Payment_Id = pay.Payment_Id
              WHERE b.Booking_Id = ? AND b.User_Id = ?"
         );
         $stmt->execute([$booking_id, $_SESSION['user_id']]);
@@ -218,7 +218,7 @@ class PropertyController {
         // Only allow cancel if booking belongs to this user AND is still Pending
         $stmt = $this->db->prepare(
             "SELECT Booking_Id, Property_Id, Payment_Id
-             FROM Booking
+             FROM booking
              WHERE Booking_Id = ? AND User_Id = ? AND Reservation_Status = 'Pending'"
         );
         $stmt->execute([$booking_id, $_SESSION['user_id']]);
@@ -230,12 +230,12 @@ class PropertyController {
         }
 
         // Mark booking as Cancelled
-        $this->db->prepare("UPDATE Booking SET Reservation_Status = 'Cancelled' WHERE Booking_Id = ?")
+        $this->db->prepare("UPDATE booking SET Reservation_Status = 'Cancelled' WHERE Booking_Id = ?")
                  ->execute([$booking_id]);
 
         // Set property back to Available
         $this->db->prepare(
-            "UPDATE Property SET Status = 'Available' WHERE Property_Id = ?"
+            "UPDATE property SET Status = 'Available' WHERE Property_Id = ?"
         )->execute([$booking['Property_Id']]);
 
         header("Location: index.php?action=my_bookings&success=cancelled");
@@ -255,9 +255,9 @@ class PropertyController {
             "SELECT b.*, p.Property_Name, p.Property_location, p.Property_rate,
                     p.image_path, p.Property_Id,
                     pay.Payment_Method, pay.Amount
-             FROM Booking b
-             JOIN Property p  ON b.Property_Id  = p.Property_Id
-             LEFT JOIN Payment pay ON b.Payment_Id = pay.Payment_Id
+             FROM booking b
+             JOIN property p  ON b.Property_Id  = p.Property_Id
+             LEFT JOIN payment pay ON b.Payment_Id = pay.Payment_Id
              WHERE b.Booking_Id = ? AND b.User_Id = ?"
         );
         $stmt->execute([$booking_id, $_SESSION['user_id']]);
@@ -270,7 +270,7 @@ class PropertyController {
 
         // Fetch other bookings for this property (excluding current) to show conflict hints
         $rangeStmt = $this->db->prepare(
-            "SELECT Booking_Id, Check_In, Check_Out FROM Booking
+            "SELECT Booking_Id, Check_In, Check_Out FROM booking
              WHERE Property_Id = ? AND Booking_Id != ?
                AND Reservation_Status IN ('Pending', 'Confirmed')
                AND Check_Out >= CURDATE()"
@@ -301,8 +301,8 @@ class PropertyController {
 
         // Booking must belong to this user and still be Pending
         $stmt = $this->db->prepare(
-            "SELECT b.*, p.Property_rate FROM Booking b
-             JOIN Property p ON b.Property_Id = p.Property_Id
+            "SELECT b.*, p.Property_rate FROM booking b
+             JOIN property p ON b.Property_Id = p.Property_Id
              WHERE b.Booking_Id = ? AND b.User_Id = ? AND b.Reservation_Status = 'Pending'"
         );
         $stmt->execute([$booking_id, $_SESSION['user_id']]);
@@ -324,7 +324,7 @@ class PropertyController {
 
         // Server-side overlap check (excluding this booking)
         $overlapStmt = $this->db->prepare(
-            "SELECT COUNT(*) FROM Booking
+            "SELECT COUNT(*) FROM booking
              WHERE Property_Id = ? AND Booking_Id != ?
                AND Reservation_Status IN ('Pending', 'Confirmed')
                AND Check_In < ? AND Check_Out > ?"
@@ -341,7 +341,7 @@ class PropertyController {
 
         // Update booking dates and times
         $this->db->prepare(
-            "UPDATE Booking SET Check_In = ?, Check_In_Time = ?, Check_Out = ?, Check_Out_Time = ?
+            "UPDATE booking SET Check_In = ?, Check_In_Time = ?, Check_Out = ?, Check_Out_Time = ?
              WHERE Booking_Id = ?"
         )->execute([$check_in, $check_in_time, $check_out, $check_out_time, $booking_id]);
 
@@ -365,8 +365,8 @@ class PropertyController {
         $stmt = $this->db->prepare(
             "SELECT b.Booking_Id, b.Check_In, b.Check_Out,
                     p.Property_Id, p.Property_Name, p.image_path, p.Property_location
-             FROM Booking b
-             JOIN Property p ON b.Property_Id = p.Property_Id
+             FROM booking b
+             JOIN property p ON b.Property_Id = p.Property_Id
              LEFT JOIN reviews r ON r.booking_id = b.Booking_Id
              WHERE b.Booking_Id = ?
                AND b.User_Id = ?
@@ -416,7 +416,7 @@ class PropertyController {
 
         // Re-verify eligibility server-side
         $check = $this->db->prepare(
-            "SELECT b.Booking_Id FROM Booking b
+            "SELECT b.Booking_Id FROM booking b
              LEFT JOIN reviews r ON r.booking_id = b.Booking_Id
              WHERE b.Booking_Id = ? AND b.User_Id = ?
                AND b.Reservation_Status IN ('Confirmed', 'Completed')

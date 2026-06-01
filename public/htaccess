@@ -1,0 +1,41 @@
+# ============================================================
+#  EstateBook — Root .htaccess  (place in public/)
+#  Hostinger Linux + Apache + mod_rewrite
+# ============================================================
+
+# --- 1. Enable the rewrite engine ---
+Options -Indexes
+Options +FollowSymLinks
+RewriteEngine On
+
+# --- 2. Set the rewrite base to the folder where index.php lives ---
+#  If EstateBook is installed at the domain root  → RewriteBase /
+#  If it lives in a subdirectory e.g. /estatebook → RewriteBase /estatebook/
+RewriteBase /public/
+
+# --- 3. Skip real files and directories (CSS, JS, images, etc.) ---
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# --- 4. Route everything else through index.php ---
+#  Preserves ?action=... query strings automatically.
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# --- 5. Security headers ---
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# --- 6. PHP error display (set to Off on production, On while debugging) ---
+<IfModule mod_php.c>
+    # DURING DEBUG: flip display_errors to On to see DB errors in browser
+    php_flag  display_errors On
+    php_value error_reporting E_ALL
+    php_flag  log_errors On
+</IfModule>
+
+# --- 7. Character set ---
+AddDefaultCharset UTF-8

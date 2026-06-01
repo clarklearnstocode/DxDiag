@@ -42,7 +42,7 @@ $_pendingCount = 0;
 try {
     $_sidebarDb = (new Database())->getConnection();
     $_pendingStmt = $_sidebarDb->query(
-        "SELECT COUNT(*) FROM Booking WHERE Reservation_Status = 'Pending'"
+        "SELECT COUNT(*) FROM booking WHERE Reservation_Status = 'Pending'"
     );
     $_pendingCount = (int)$_pendingStmt->fetchColumn();
     unset($_sidebarDb, $_pendingStmt);
